@@ -133,6 +133,8 @@ class receiver:
 			sList, yList, bList, cList = self.unpackSharesAuxMode(shares)
 			honestNodes = self.verifyAuxInfo(sList, yList, bList, cList)
 			sharesForRecon = self.getReconSharesAuxMode(sList, honestNodes, k)
+		else:
+			print "invalid mode"
 
 		secretNum = secretSharing.reconstructSecret(sharesForRecon, k, prime)
 		secret = message.numToStr(secretNum)

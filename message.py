@@ -101,6 +101,20 @@ class message:
 		return str(msgList)
 
 	@staticmethod
+	def generateHash(msg):
+		if type(msg) != str:
+			raise RuntimeError("invalid msg: string expected")
+		dig = hashlib.sha256(msg).digest()
+		hashValue = base64.b64encode(dig)
+		return hashValue
+
+	@staticmethod
+	def verifyHash(msg, hashValue):
+		if type(msg) != str or type(hashValue) != str:
+			raise RuntimeError("invalid msg or hash: string expected")
+		return message.generateHash(msg) == hashValue
+
+	@staticmethod
 	def generateMac(msg, key):
 		if type(msg) != str or type(key) != str:
 			raise RuntimeError("invalid msg or key: string expected")

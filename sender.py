@@ -4,7 +4,6 @@ from message import message, secretSharing
 NO_VERIFICATION = 1
 AUX_INFO_VERIFICATION = 2
 MAC_VERIFICATION = 3
-SIGNATURE_VERIFICATION = 4
 
 class sender:
 
@@ -65,8 +64,6 @@ class sender:
 			self.sendSharesMac(shares, nodes)
 		elif mode == AUX_INFO_VERIFICATION:
 			self.sendSharesAuxInfo(shares, nodes)
-		elif mode == SIGNATURE_VERIFICATION:
-			print "mode not defined yet"
 		else:
 			print "invalid mode"
 
