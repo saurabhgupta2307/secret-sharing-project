@@ -24,6 +24,21 @@ class receiver:
 
 		return shares
 
+	def unpackSharesAuxMode(self, shares):
+		sList = []
+		yList = []
+		bList = []
+		cList = []
+
+		for share in shares:
+			shareList = message.strToList(share)
+			sList.append(shareList[0])
+			yList += shareList[1]
+			bList += shareList[2]
+			cList += shareList[3]
+			
+		return [sList, yList, bList, cList]
+
 	def verifyMac(self, shares):
 		acceptMac = []
 		for share in shares:
@@ -33,7 +48,18 @@ class receiver:
 
 		return acceptMac
 
-	def unpackSharesMacMode(self, shares, honestNodes, k):
+	def verifyAuxInfo(self, shares):
+		acceptAuxInfo = []
+		sList, yList, bList, cList = self.unpackSharesAuxMode(shares)
+
+		for share in shares:
+			acceptAuxInfo.append(True)
+			
+		# TODO Verify shares and update acceptAuxInfo
+
+		return [sList, acceptAuxInfo]
+
+	def getReconSharesMacMode(self, shares, honestNodes, k):
 		sharesForRecon = []
 
 		for i in range(0, len(honestNodes)):
@@ -44,17 +70,29 @@ class receiver:
 
 		return sharesForRecon[0:k]
 
+
+	def getReconSharesAuxMode(self, shares, honestNodes, k):
+		sharesForRecon = []
+
+		for i in range(0, len(honestNodes)):
+			if honestNodes[i] == True:
+				sharesForRecon.append(shares[i])
+
+		return sharesForRecon[0:k]
+
+
 	def reconstructSecret(self, nodes, buffer, k, prime, mode=NO_VERIFICATION):
 		shares = self.getShares(nodes, buffer)
 		sharesForRecon = []
 
 		if mode == MAC_VERIFICATION:
 			honestNodes = self.verifyMac(shares)
-			sharesForRecon = self.unpackSharesMacMode(shares, honestNodes, k)
-			secretNum = secretSharing.reconstructSecret(sharesForRecon, k, prime)
-			secret = message.numToStr(secretNum)
+			sharesForRecon = self.getReconSharesMacMode(shares, honestNodes, k)
 		elif mode == AUX_INFO_VERIFICATION:
-			honestNodes = self.verifyAuxInfo(shares)
+			sharesList, honestNodes = self.verifyAuxInfo(shares)
+			sharesForRecon = self.getReconSharesAuxMode(sharesList, honestNodes, k)
 
+		secretNum = secretSharing.reconstructSecret(sharesForRecon, k, prime)
+		secret = message.numToStr(secretNum)
 		return [secret, honestNodes]
 
