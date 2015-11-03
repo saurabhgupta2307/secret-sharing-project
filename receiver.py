@@ -24,6 +24,17 @@ class receiver:
 
 		return shares
 
+	def unpackSharesMacMode(self, shares):
+		sList = []
+		macList = []
+
+		for share in shares:
+			shareList = message.strToList(share)
+			sList.append(shareList[0])
+			macList.append(shareList[1])
+			
+		return [sList, macList]
+
 	def unpackSharesAuxMode(self, shares):
 		sList = []
 		yList = []
@@ -39,44 +50,70 @@ class receiver:
 			
 		return [sList, yList, bList, cList]
 
-	def verifyMac(self, shares):
+	def verifyMac(self, sList, macList):
 		acceptMac = []
-		for share in shares:
-			shareList = message.strToList(share)
-			result = message.verifyMac(shareList[0], self.key, shareList[1])
+		for i in range(0, len(sList)):
+			result = message.verifyMac(sList[i], self.key, macList[i])
 			acceptMac.append(result)
 
 		return acceptMac
 
-	def verifyAuxInfo(self, shares):
-		acceptAuxInfo = []
-		sList, yList, bList, cList = self.unpackSharesAuxMode(shares)
+	def verifyAuxInfo(self, sList, yList, bList, cList, t):
+		acceptAuxInfo = [True] * len(sList) 
+		resultMatrix = [[True] * len(sList) for i in range(len(sList))]
+		# len(sList) = n, len(yList) = len(bList) = len(cList) = n * (n-1)
+		
+		for i in range(0, len(sList)):
+			si = sList[i][1]
+			yiList = [element for element in yList if element[0] == i+1]
+			biList = [element for element in bList if element[1] == i+1]
+			ciList = [element for element in cList if element[1] == i+1]
+			yiList = sorted(yiList, key=lambda x: x[1])
+			biList = sorted(biList, key=lambda x: x[0])
+			ciList = sorted(ciList, key=lambda x: x[0])
 
-		for share in shares:
-			acceptAuxInfo.append(True)
-			
-		# TODO Verify shares and update acceptAuxInfo
+			for j in range(0, len(yiList)):
+				yij = yiList[j][2]
+				bij = biList[j][2]
+				cij = ciList[j][2]
+				if j < i:
+					z = j
+				else:
+					z = j+1
+				resultMatrix[i][z] = message.verifyAuxInfo(si, yij, bij, cij)
 
-		return [sList, acceptAuxInfo]
+			if resultMatrix[i].count(False) >= t:
+				acceptAuxInfo[i] = False
+		
+		# TODO Check each column for t False and update
 
-	def getReconSharesMacMode(self, shares, honestNodes, k):
+		return acceptAuxInfo
+
+	def getReconSharesMacMode(self, sList, honestNodes, k):
 		sharesForRecon = []
 
 		for i in range(0, len(honestNodes)):
 			if honestNodes[i] == True:
-				shareList = message.strToList(shares[i]) #Unpack [shareStr, mac] from string
-				share = message.strToList(shareList[0]) #Unpack share from shareStr
+				share = message.strToList(sList[i]) 
 				sharesForRecon.append(share)
 
 		return sharesForRecon[0:k]
 
 
-	def getReconSharesAuxMode(self, shares, honestNodes, k):
+	def getReconSharesAuxMode(self, sList, honestNodes, k):
 		sharesForRecon = []
 
 		for i in range(0, len(honestNodes)):
 			if honestNodes[i] == True:
-				sharesForRecon.append(shares[i])
+				sharesForRecon.append(sList[i])
+
+		return sharesForRecon[0:k]
+
+	def getReconSharesNoVrfy(self, sList, k):
+		sharesForRecon = []
+
+		for share in sList:
+			sharesForRecon.append(message.strToList(share))
 
 		return sharesForRecon[0:k]
 
@@ -84,13 +121,18 @@ class receiver:
 	def reconstructSecret(self, nodes, buffer, k, prime, mode=NO_VERIFICATION):
 		shares = self.getShares(nodes, buffer)
 		sharesForRecon = []
+		honestNodes = []
 
-		if mode == MAC_VERIFICATION:
-			honestNodes = self.verifyMac(shares)
-			sharesForRecon = self.getReconSharesMacMode(shares, honestNodes, k)
+		if mode == NO_VERIFICATION:
+			sharesForRecon = self.getReconSharesNoVrfy(sList, k)
+		elif mode == MAC_VERIFICATION:
+			sList, macList = self.unpackSharesMacMode(shares)
+			honestNodes = self.verifyMac(sList, macList)
+			sharesForRecon = self.getReconSharesMacMode(sList, honestNodes, k)
 		elif mode == AUX_INFO_VERIFICATION:
-			sharesList, honestNodes = self.verifyAuxInfo(shares)
-			sharesForRecon = self.getReconSharesAuxMode(sharesList, honestNodes, k)
+			sList, yList, bList, cList = self.unpackSharesAuxMode(shares)
+			honestNodes = self.verifyAuxInfo(sList, yList, bList, cList)
+			sharesForRecon = self.getReconSharesAuxMode(sList, honestNodes, k)
 
 		secretNum = secretSharing.reconstructSecret(sharesForRecon, k, prime)
 		secret = message.numToStr(secretNum)

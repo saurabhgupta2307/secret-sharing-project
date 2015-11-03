@@ -127,7 +127,7 @@ class message:
 
 	
 	@staticmethod
-	def verifyAuxInfo(c, s, b, y):
+	def verifyAuxInfo(s, y, b, c):
 		if type(c) not in [int, long] or type(s) not in [int, long] or type(b) not in [int, long] or type(y) not in [int, long]:
 			raise RuntimeError("invalid a or b or c or d: int or long expected")
 		return c == s * b + y

@@ -14,12 +14,20 @@ class sender:
 		self.sock.bind((self.host, port))
 		self.key = key
 
+	def sendSharesNoVrfy(self, shares, nodes):
+		for i in range(0, len(shares)):
+			share = message.listToStr(shares[i])
+			msg = message.listToStr(share)
+			self.sock.connect(node[i])
+			self.sock.send(msg, ',')
+			self.sock.close()
+
 	def sendSharesMac(self, shares, nodes):
 		for i in range(0, len(shares)):
 			share = message.listToStr(shares[i])
 			mac = generateMac(share, self.key)
-			self.sock.connect(node[i])
 			msg = message.listToStr([share, mac])
+			self.sock.connect(node[i])
 			self.sock.send(msg, ',')
 			self.sock.close()
 
@@ -51,9 +59,15 @@ class sender:
 	def sendShares(self, msg, n, k, prime, nodes, mode=NO_VERIFICATION):
 		shares = secretSharing.generateShares(msg, n, k, prime)
 
-		if mode == MAC_VERIFICATION:
+		if mode == NO_VERIFICATION:
+			self.sendSharesNoVrfy(shares, nodes)
+		elif mode == MAC_VERIFICATION:
 			self.sendSharesMac(shares, nodes)
 		elif mode == AUX_INFO_VERIFICATION:
 			self.sendSharesAuxInfo(shares, nodes)
+		elif mode == SIGNATURE_VERIFICATION:
+			print "mode not defined yet"
+		else:
+			print "invalid mode"
 
 
