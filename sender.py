@@ -1,6 +1,11 @@
 from mysocket import mysocket
 from message import message, secretSharing
 
+NO_VERIFICATION = 1
+AUX_INFO_VERIFICATION = 2
+MAC_VERIFICATION = 3
+SIGNATURE_VERIFICATION = 4
+
 class sender:
 
 	def __init__(self, port, key):
@@ -43,12 +48,12 @@ class sender:
 			self.sock.close()
 
 
-	def sendShares(self, msg, n, k, prime, nodes, useMac=False):
+	def sendShares(self, msg, n, k, prime, nodes, mode=NO_VERIFICATION):
 		shares = secretSharing.generateShares(msg, n, k, prime)
 
-		if useMac == True:
+		if mode == MAC_VERIFICATION:
 			self.sendSharesMac(shares, nodes)
-		else:
+		elif mode == AUX_INFO_VERIFICATION:
 			self.sendSharesAuxInfo(shares, nodes)
 
 
