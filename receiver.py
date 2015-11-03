@@ -61,7 +61,6 @@ class receiver:
 	def verifyAuxInfo(self, sList, yList, bList, cList, t):
 		acceptAuxInfo = [True] * len(sList) 
 		resultMatrix = [[True] * len(sList) for i in range(len(sList))]
-		# len(sList) = n, len(yList) = len(bList) = len(cList) = n * (n-1)
 		
 		for i in range(0, len(sList)):
 			si = sList[i][1]
@@ -118,7 +117,7 @@ class receiver:
 		return sharesForRecon[0:k]
 
 
-	def reconstructSecret(self, nodes, buffer, k, prime, mode=NO_VERIFICATION):
+	def reconstructSecret(self, nodes, buffer, k, t, prime, mode=NO_VERIFICATION):
 		shares = self.getShares(nodes, buffer)
 		sharesForRecon = []
 		honestNodes = []
@@ -131,7 +130,7 @@ class receiver:
 			sharesForRecon = self.getReconSharesMacMode(sList, honestNodes, k)
 		elif mode == AUX_INFO_VERIFICATION:
 			sList, yList, bList, cList = self.unpackSharesAuxMode(shares)
-			honestNodes = self.verifyAuxInfo(sList, yList, bList, cList)
+			honestNodes = self.verifyAuxInfo(sList, yList, bList, cList, t)
 			sharesForRecon = self.getReconSharesAuxMode(sList, honestNodes, k)
 		else:
 			print "invalid mode"
