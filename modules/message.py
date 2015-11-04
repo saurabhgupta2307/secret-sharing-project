@@ -79,11 +79,11 @@ class message:
 		try:
 			return base64.b64decode(b64Msg)
 		except binascii.Error:
-			print "invalid operation: string not in base64"
+			raise RuntimeError("invalid operation: string not in base64")
 
 	@staticmethod
 	def numToBase64(msgNum):
-		if type(msg) not in [int, long]:
+		if type(msgNum) not in [int, long]:
 			raise RuntimeError("invalid message: int or long expected")
 		return message.strToBase64(bytes(msgNum))
 
@@ -132,22 +132,21 @@ class message:
 		return message.generateMac(msg, key) == tag
 
 	@staticmethod
-	def generateAuxInfo(msgNum):
-		if type(msgNum) not in [int, long]:
-			raise RuntimeError("invalid msg: int or long expected")
+	def generateAuxInfo(s, prime):
+		if type(s) not in [int, long] or type(prime) not in [int, long]:
+			raise RuntimeError("invalid msg or prime: int or long expected")
 
-		length = len(bin(msgNum)[2:])
-		b = random.randint(0, 2**length - 1)
-		y = random.randint(0, 2**length - 1)
-		c = b * msgNum + y
+		b = random.randint(0, prime)
+		y = random.randint(0, prime)
+		c = (b * s + y) % prime
 		return [c, b, y]
 
 	
 	@staticmethod
-	def verifyAuxInfo(s, y, b, c):
+	def verifyAuxInfo(s, y, b, c, prime):
 		if type(c) not in [int, long] or type(s) not in [int, long] or type(b) not in [int, long] or type(y) not in [int, long]:
 			raise RuntimeError("invalid a or b or c or d: int or long expected")
-		return c == s * b + y
+		return c == (s * b + y) % prime
 	
 
 class secretSharing:
@@ -233,31 +232,32 @@ class secretSharing:
 
 
 #------------------------------------------------------------
-'''
-msg = "hello"
-secretNum = message.strToNum(msg)
-n, k = 4, 4
+if __name__ == "__main__":
+	# Test code
+	msg = "lets try one really long message to see if it works for all messages."
+	secretNum = message.strToNum(msg)
+	n, k = 2, 2
 
-primes = generatePrimes()
-prime = getLargePrime(primes, secretNum, n)
-if prime is None:
-	raise ValueError("message too long")
+	primes = generatePrimes()
+	prime = getLargePrime(primes, secretNum, n)
+	print prime
+	if prime is None:
+		raise ValueError("message too long")
 
-shares = secretSharing.generateShares(secretNum, n, k, prime)
-#shares = sorted(shares, key=lambda x: x[0])
-secret = secretSharing.reconstructSecret(shares, k, prime)
+	shares = secretSharing.generateShares(secretNum, n, k, prime)
+	#shares = sorted(shares, key=lambda x: x[0])
+	secret = secretSharing.reconstructSecret(shares, k, prime)
 
-print len(msg), len(str(secretNum)), (secretNum == secret) 
+	print len(msg), len(str(secretNum)), (secretNum == secret) 
 
-#------------------------------------------------------------
+	#------------------------------------------------------------
 
-shareStr = message.listToStr(shares)
-shareNum = message.strToNum(shareStr)
-shareBase64 = message.strToBase64(shareStr)
+	shareStr = message.listToStr(shares)
+	shareNum = message.strToNum(shareStr)
+	shareBase64 = message.strToBase64(shareStr)
 
-share2 = message.strToList(message.numToStr(shareNum))
-share3 = message.strToList(message.base64ToStr(shareBase64))
+	share2 = message.strToList(message.numToStr(shareNum))
+	share3 = message.strToList(message.base64ToStr(shareBase64))
 
-print len(shareStr), len(str(shareNum)), len(shareBase64), shares == share2, shares == share3
-print shareBase64
-'''
+	print len(shareStr), len(str(shareNum)), len(shareBase64), shares == share2, shares == share3
+	print shareBase64

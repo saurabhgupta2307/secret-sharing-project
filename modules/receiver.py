@@ -4,7 +4,7 @@ from message import NO_VERIFICATION, MAC_VERIFICATION, AUX_INFO_VERIFICATION
 
 class receiver:
 
-	def __init__(self, port, key):
+	def __init__(self, port, key=None):
 		self.host, self.port = mysocket.gethostname(), port
 		self.sock = mysocket()
 		self.sock.bind((self.host, port))
@@ -12,6 +12,17 @@ class receiver:
 
 	def getShares(self, nodes, buffer):
 		shares = []
+		
+		######### Test Code ################
+		if len(nodes) == 1:
+			self.sock.listen(5)
+			c, addr = self.sock.accept()
+			shares = c.recv(buffer, ',')
+			c.close()
+			self.sock.close()
+			return message.strToList(shares)
+		######## To be removed ##############
+		
 		for node in nodes:
 			self.sock.connect(node)
 			share = self.sock.recv(buffer, ',')
@@ -54,7 +65,7 @@ class receiver:
 
 		return acceptMac
 
-	def verifyAuxInfo(self, sList, yList, bList, cList, t):
+	def verifyAuxInfo(self, sList, yList, bList, cList, t, prime):
 		acceptAuxInfo = [True] * len(sList) 
 		resultMatrix = [[True] * len(sList) for i in range(len(sList))]
 		
@@ -75,12 +86,10 @@ class receiver:
 					z = j
 				else:
 					z = j+1
-				resultMatrix[i][z] = message.verifyAuxInfo(si, yij, bij, cij)
+				resultMatrix[i][z] = message.verifyAuxInfo(si, yij, bij, cij, prime)
 
 			if resultMatrix[i].count(False) >= t:
 				acceptAuxInfo[i] = False
-		
-		# TODO Check each column for t False and update
 
 		return acceptAuxInfo
 
@@ -119,19 +128,33 @@ class receiver:
 		honestNodes = []
 
 		if mode == NO_VERIFICATION:
-			sharesForRecon = self.getReconSharesNoVrfy(sList, k)
+			sharesForRecon = self.getReconSharesNoVrfy(shares, k)
 		elif mode == MAC_VERIFICATION:
 			sList, macList = self.unpackSharesMacMode(shares)
 			honestNodes = self.verifyMac(sList, macList)
 			sharesForRecon = self.getReconSharesMacMode(sList, honestNodes, k)
 		elif mode == AUX_INFO_VERIFICATION:
 			sList, yList, bList, cList = self.unpackSharesAuxMode(shares)
-			honestNodes = self.verifyAuxInfo(sList, yList, bList, cList, t)
+			honestNodes = self.verifyAuxInfo(sList, yList, bList, cList, t, prime)
 			sharesForRecon = self.getReconSharesAuxMode(sList, honestNodes, k)
 		else:
 			print "invalid mode"
 
 		secretNum = secretSharing.reconstructSecret(sharesForRecon, k, prime)
 		secret = message.numToStr(secretNum)
-		return [secret, honestNodes]
+		return [shares, secret, honestNodes]
 
+
+#------------------------------------------------------------
+if __name__ == "__main__":
+	# Test code
+	key = 'MTM2MTUyODcyOTQwNDA2MzQwMQ=='
+	r = receiver(12340, key)
+	nodes = [(mysocket.gethostname(), 12341)]
+	buffer = 1024
+	k = 5
+	t = 2
+	prime = 531137992816767098689588206552468627329593117727031923199444138200403559860852242739162502265229285668889329486246501015346579337652707239409519978766587351943831270835393219031728127
+	mode = NO_VERIFICATION
+	shares, secret, honestNodes = r.reconstructSecret(nodes, buffer, k, t, prime, mode)
+	print secret
