@@ -5,6 +5,9 @@ import hashlib
 import base64
 import ast
 
+NO_VERIFICATION = 1
+AUX_INFO_VERIFICATION = 2
+MAC_VERIFICATION = 3
 
 def generatekey(length=256):
 	if type(length) not in [int, long]:

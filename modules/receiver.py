@@ -1,10 +1,6 @@
 from mysocket import mysocket
 from message import message, secretSharing
-
-NO_VERIFICATION = 1
-AUX_INFO_VERIFICATION = 2
-MAC_VERIFICATION = 3
-SIGNATURE_VERIFICATION = 4
+from message import NO_VERIFICATION, MAC_VERIFICATION, AUX_INFO_VERIFICATION
 
 class receiver:
 

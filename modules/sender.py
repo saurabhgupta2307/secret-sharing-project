@@ -1,9 +1,6 @@
 from mysocket import mysocket
 from message import message, secretSharing
-
-NO_VERIFICATION = 1
-AUX_INFO_VERIFICATION = 2
-MAC_VERIFICATION = 3
+from message import NO_VERIFICATION, MAC_VERIFICATION, AUX_INFO_VERIFICATION
 
 class sender:
 
@@ -54,7 +51,7 @@ class sender:
 			self.sock.send(msg, ',')
 			self.sock.close()
 
-
+	
 	def sendShares(self, msg, n, k, prime, nodes, mode=NO_VERIFICATION):
 		shares = secretSharing.generateShares(msg, n, k, prime)
 
@@ -66,5 +63,4 @@ class sender:
 			self.sendSharesAuxInfo(shares, nodes)
 		else:
 			print "invalid mode"
-
 
