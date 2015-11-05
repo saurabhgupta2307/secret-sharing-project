@@ -90,14 +90,24 @@ class sender:
 
 #------------------------------------------------------------
 if __name__ == "__main__":
-	# Test code
-	key = 'MTM2MTUyODcyOTQwNDA2MzQwMQ=='
-	r = sender(12341, key)
+	fp = open("sender.txt", "r")
+	dictStr = fp.read()
+	fp.close()
+
+	senderDict = message.strToList(dictStr)
+	port = senderDict['port']
+	msg = senderDict['msg']
+	n = senderDict['n']
+	k = senderDict['k']
+	prime = senderDict['prime']
+	key = senderDict['key']
+	mode = senderDict['mode']
+	nodePorts = senderDict['nodes']
+	addr = mysocket.gethostname()
+	nodes = [(addr, portNum) for portNum in nodePorts]
+
+	'''
+	r = sender(port, key)
 	nodes = [(mysocket.gethostname(), 12340)]
-	n = 5
-	k = 5
-	msg = "lets try one really long message to see if it works for all messages."
-	prime = 531137992816767098689588206552468627329593117727031923199444138200403559860852242739162502265229285668889329486246501015346579337652707239409519978766587351943831270835393219031728127
-	mode = NO_VERIFICATION
 	shares = r.sendShares(msg, n, k, prime, nodes, mode)
-	print msg
+	'''

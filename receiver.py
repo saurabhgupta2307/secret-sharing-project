@@ -165,14 +165,25 @@ class receiver:
 
 #------------------------------------------------------------
 if __name__ == "__main__":
-	# Test code
-	key = 'MTM2MTUyODcyOTQwNDA2MzQwMQ=='
+	fp = open("receiver.txt", "r")
+	dictStr = fp.read()
+	fp.close()
+
+	recvrDict = message.strToList(dictStr)
+	port = recvrDict['port']
+	t = recvrDict['t']
+	k = recvrDict['k']
+	prime = recvrDict['prime']
+	key = recvrDict['key']
+	mode = recvrDict['mode']
+	buf = recvrDict['buffer']
+	nodePorts = recvrDict['nodes']
+	addr = mysocket.gethostname()
+	nodes = [(addr, portNum) for portNum in nodePorts]
+
+	'''
 	r = receiver(12340, key)
 	nodes = [(mysocket.gethostname(), 12341)]
-	buffer = 1024
-	k = 5
-	t = 2
-	prime = 531137992816767098689588206552468627329593117727031923199444138200403559860852242739162502265229285668889329486246501015346579337652707239409519978766587351943831270835393219031728127
-	mode = NO_VERIFICATION
 	shares, secret, honestNodes = r.reconstructSecret(nodes, buffer, k, t, prime, mode)
 	print secret
+	'''

@@ -2,6 +2,7 @@ from modules.mysocket import mysocket
 from modules import NO_VERIFICATION, MAC_VERIFICATION, AUX_INFO_VERIFICATION
 from modules.message import message
 import random
+import argparse
 
 class node:
 
@@ -15,8 +16,8 @@ class node:
 	def getNode(self):
 		return (self.host, self.port)
 
-	def receiveShare(self, client):
-		share = client.recv(buffer, ',')
+	def receiveShare(self, client, buf):
+		share = client.recv(buf, ',')
 		self.setShare(share)
 
 	def manipulateShare(self, mode):
@@ -46,7 +47,7 @@ class node:
 	def setShare(self, share):
 		self.share = share
 
-	def run(self, senderPort, receiverPort, mode=NO_VERIFICATION, honest=True):
+	def run(self, senderPort, receiverPort, buf, mode=NO_VERIFICATION, honest=True):
 		self.sock.accept(5)
 		clients = [None, None]
 		tasksDone = [False, False]
@@ -66,7 +67,7 @@ class node:
 					c.close()
 				
 			if clients[0] != None:
-				self.receiveShare(clients[0])
+				self.receiveShare(clients[0], buf)
 				clients[0].close()
 				print "Share received:", self.getShare(), "\n"
 				if honest == False:
@@ -82,3 +83,30 @@ class node:
 				tasksDone[1] = True
 
 		self.sock.close()
+
+
+#------------------------------------------------------------
+if __name__ == "__main__":
+	parser = argparse.ArgumentParser()
+	parser.add_argument("-p", "--port", type=int)
+	parser.add_argument("-f", "--faulty", type=bool)
+	args = parser.parse_args()
+
+	if args.port == None:
+		raise RuntimeError("No port specified")
+
+	fp = open("nodes.txt", "r")
+	dictStr = fp.read()
+	fp.close()
+
+	nodeDict = message.strToList(dictStr)
+	mode = nodeDict['mode']
+	buf = nodeDict['buffer']
+	senderPort = nodeDict['sender']
+	receiverPort = nodeDict['receiver']
+	port = args.port
+	if args.faulty != None:
+		honest = not args.faulty
+	else:
+		honest = True
+
