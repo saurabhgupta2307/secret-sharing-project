@@ -18,6 +18,9 @@ class mysocket:
     def gethostname():
         return socket.gethostname()
 
+    def getportnumber():
+        return self.sock.getsockname()[1]
+
     def accept(self):
         newSocket, addr = self.sock.accept()
         return (mysocket(newSocket), addr)

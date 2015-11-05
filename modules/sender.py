@@ -7,7 +7,7 @@ class sender:
 	def __init__(self, port, key=None):
 		self.host, self.port = mysocket.gethostname(), port
 		self.sock = mysocket()
-		self.sock.bind((self.host, port))
+		self.sock.bind((self.host, self.port))
 		self.key = key
 
 	def getSharesNoVrfy(self, shares):
