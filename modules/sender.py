@@ -19,7 +19,6 @@ class sender:
 
 		return sharesToSend
 
-
 	def getSharesWithMac(self, shares):
 		sharesToSend = []
 		for share in shares:

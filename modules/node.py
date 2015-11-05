@@ -1,5 +1,7 @@
 from mysocket import mysocket
 from message import NO_VERIFICATION, MAC_VERIFICATION, AUX_INFO_VERIFICATION
+from message import message
+import random
 
 class node:
 
@@ -18,10 +20,19 @@ class node:
 		self.setShare(share)
 
 	def manipulateShare(self, mode):
-		if mode in [NO_VERIFICATION, AUX_INFO_VERIFICATION]:
-			self.share = None # TODO
+		share = message.strToList(self.share)
+		if mode in NO_VERIFICATION:
+			share[1] = random.randint(0, share[1])
+		elif mode == AUX_INFO_VERIFICATION:
+			share[0][1] = random.randint(0, share[0][1])
 		elif mode == MAC_VERIFICATION:
-			self.share = None # TODO
+			shareStr = share[0]
+			shareList = message.strToList(shareStr)
+			shareList[1] = random.randint(0, shareList[1])
+			shareStr = message.listToStr(shareList)
+			share[0] = shareStr
+
+		self.share = message.listToStr(share)
 
 	def sendShare(self, client):
 		client.send(self.share, ',')
