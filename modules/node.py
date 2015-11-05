@@ -1,20 +1,41 @@
 from mysocket import mysocket
+from message import NO_VERIFICATION, MAC_VERIFICATION, AUX_INFO_VERIFICATION
 
 class node:
-	share = None
 
 	def __init__(self, port):
 		self.host, self.port = mysocket.gethostname(), port
 		self.sock = mysocket()
 		self.sock.bind((self.host, self.port))
+		self.share = None
+		print "Node (%s, %d) initiated" % (self.host, self.port)
+
+	def getNode(self):
+		return (self.host, self.port)
 
 	def receiveShare(self, client):
-		self.share = client.recv(buffer, ',')
+		share = client.recv(buffer, ',')
+		self.setShare(share)
+
+	def manipulateShare(self, mode):
+		if mode in [NO_VERIFICATION, AUX_INFO_VERIFICATION]:
+			self.share = None # TODO
+		elif mode == MAC_VERIFICATION:
+			self.share = None # TODO
 
 	def sendShare(self, client):
 		client.send(self.share, ',')
 
-	def run(self, senderPort, receiverPort):
+	def isShareReceived(self):
+		return self.share != None
+
+	def getShare(self):
+		return self.share
+
+	def setShare(self, share):
+		self.share = share
+
+	def run(self, senderPort, receiverPort, mode=NO_VERIFICATION, honest=True):
 		self.sock.accept(5)
 		clients = [None, None]
 		tasksDone = [False, False]
@@ -22,21 +43,31 @@ class node:
 		while tasksDone.count(True) != 2:
 			if clients.count(None) > 0:
 				c, addr = self.sock.accept()
-				if c.getportnumber() == senderPort:
+				port = c.getportnumber()
+				if port == senderPort:
 					clients[0] = c
-				elif c.getportnumber() == receiverPort:
+					print "Sender (Port=%d) connected" % port
+				elif port == receiverPort:
 					clients[1] = c
+					print "Receiver (Port=%d) connected" % port
 				else:
+					print "Unknown node (%s, %d) connected. Dropping connection!" % (addr, port)
 					c.close()
 				
 			if clients[0] != None:
 				self.receiveShare(clients[0])
 				clients[0].close()
+				print "Share received:", self.getShare(), "\n"
+				if honest == False:
+					self.manipulateShare(mode)
+					print "Share manipulated:", self.getShare(), "\n"
 				tasksDone[0] = True
+				print "-" * 50
 
-			if clients[1] != None and tasksDone[0] == True and self.share != None:
+			if clients[1] != None and tasksDone[0] == True and self.isShareReceived():
 				self.sendShare(clients[1])
 				clients[1].close()
+				print "Sent:", self.getShare(), "\n"
 				tasksDone[1] = True
 
 		self.sock.close()

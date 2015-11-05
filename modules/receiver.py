@@ -9,6 +9,16 @@ class receiver:
 		self.sock = mysocket()
 		self.sock.bind((self.host, self.port))
 		self.key = key
+		print "Receiver (%s, %d) initiated" % (self.host, self.port)
+
+	def getShareFromNode(self, node, buffer):
+		self.sock.connect(node)
+		print "-" * 50
+		print "Node (Port=%d) connected" % node[1]
+		share = self.sock.recv(buffer, ',')
+		self.sock.close()
+		print "Share received:", share
+		return share
 
 	def getShares(self, nodes, buffer):
 		shares = []
@@ -24,10 +34,8 @@ class receiver:
 		######## To be removed ##############
 		
 		for node in nodes:
-			self.sock.connect(node)
-			share = self.sock.recv(buffer, ',')
-			self.sock.close()
-			shares.append([node, share])
+			share = self.getShareFromNode(node, buffer)
+			shares.append(share)
 
 		return shares
 
@@ -121,6 +129,12 @@ class receiver:
 
 		return sharesForRecon[0:k]
 
+	def getFaultyNodes(self, nodes, honestNodes):
+		faultyNodes = []
+		for i in range(0, len(nodes)):
+			if honestNodes[i] == True:
+				faultyNodes.append(nodes[i][1])
+
 
 	def reconstructSecret(self, nodes, buffer, k, t, prime, mode=NO_VERIFICATION):
 		shares = self.getShares(nodes, buffer)
@@ -142,6 +156,10 @@ class receiver:
 
 		secretNum = secretSharing.reconstructSecret(sharesForRecon, k, prime)
 		secret = message.numToStr(secretNum)
+		faultyNodes = self.getFaultyNodes(nodes, honestNodes)
+		print "-" * 50
+		print "Reconstructed message:", secret
+		print "Faulty nodes:", faultyNodes
 		return [shares, secret, honestNodes]
 
 

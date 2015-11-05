@@ -9,6 +9,7 @@ class sender:
 		self.sock = mysocket()
 		self.sock.bind((self.host, self.port))
 		self.key = key
+		print "Sender (%s, %d) initiated" % (self.host, self.port)
 
 	def getSharesNoVrfy(self, shares):
 		sharesToSend = []
@@ -54,8 +55,19 @@ class sender:
 
 		return sharesToSend
 
+	def sendShareToNode(self, share, node):
+		self.sock.connect(node)
+		print "-" * 50
+		print "Node (Port=%d) connected" % node[1]
+		self.sock.send(share, ',')
+		self.sock.close()
+		print "Share sent:", share
 
 	def sendShares(self, msg, n, k, prime, nodes, mode=NO_VERIFICATION):
+		if len(msg) > 150:
+			raise RuntimeError("invalid message: too long")
+
+		print "Secret message:", msg
 		shares = secretSharing.generateShares(msg, n, k, prime)
 		sharesToSend = []
 
@@ -68,15 +80,11 @@ class sender:
 
 		########## Test Code ########################################
 		if len(nodes) == 1:
-			self.sock.connect((nodes[0][0], nodes[0][1]))
-			self.sock.send(message.listToStr(sharesToSend), ',')
-			self.sock.close()
+			self.sendShareToNode(message.listToStr(sharesToSend), nodes[0])
 			################# To be removed ############################
 		else:
 			for i in range(0, len(nodes)):
-				self.sock.connect(nodes[i])
-				self.sock.send(sharesToSend[i], ',')
-				self.sock.close()
+				self.sendShareToNode(sharesToSend[i], nodes[i])
 
 		return sharesToSend
 
