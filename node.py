@@ -1,6 +1,6 @@
-from mysocket import mysocket
-from message import NO_VERIFICATION, MAC_VERIFICATION, AUX_INFO_VERIFICATION
-from message import message
+from modules.mysocket import mysocket
+from modules import NO_VERIFICATION, MAC_VERIFICATION, AUX_INFO_VERIFICATION
+from modules.message import message
 import random
 
 class node:

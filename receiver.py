@@ -1,6 +1,6 @@
-from mysocket import mysocket
-from message import message, secretSharing
-from message import NO_VERIFICATION, MAC_VERIFICATION, AUX_INFO_VERIFICATION
+from modules.mysocket import mysocket
+from modules.message import message, secretSharing
+from modules import NO_VERIFICATION, MAC_VERIFICATION, AUX_INFO_VERIFICATION
 
 class receiver:
 
