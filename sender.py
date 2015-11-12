@@ -4,12 +4,14 @@ from modules import NO_VERIFICATION, MAC_VERIFICATION, AUX_INFO_VERIFICATION
 
 class sender:
 
-	def __init__(self, port, key=None):
-		self.host, self.port = mysocket.gethostname(), port
-		self.sock = mysocket()
-		self.sock.bind((self.host, self.port))
+	def __init__(self, ports, key=None):
+		self.host, self.ports = mysocket.gethostname(), ports
+		self.sock = []
 		self.key = key
-		print "Sender (%s, %d) initiated" % (self.host, self.port)
+		for port in ports:
+			self.sock.append(mysocket())
+			self.sock[-1].bind((self.host, port))
+			print "Sender socket (%s, %d) initiated" % (self.host, port)
 
 	def getSharesNoVrfy(self, shares):
 		sharesToSend = []
@@ -54,12 +56,13 @@ class sender:
 
 		return sharesToSend
 
-	def sendShareToNode(self, share, node):
-		self.sock.connect(node)
+	def sendShareToNode(self, share, node, index):
 		print "-" * 50
+		print "Attempting to connect to node (Port=%d)" % node[1]
+		self.sock[index].connect(node)
 		print "Node (Port=%d) connected" % node[1]
-		self.sock.send(share, ',')
-		self.sock.close()
+		self.sock[index].send(share, ',')
+		self.sock[index].close()
 		print "Share sent:", share
 
 	def sendShares(self, msg, n, k, prime, nodes, mode=NO_VERIFICATION):
@@ -77,13 +80,8 @@ class sender:
 		elif mode == AUX_INFO_VERIFICATION:
 			sharesToSend = self.getSharesWithAuxInfo(shares, prime)
 
-		########## Test Code ########################################
-		if len(nodes) == 1:
-			self.sendShareToNode(message.listToStr(sharesToSend), nodes[0])
-			################# To be removed ############################
-		else:
-			for i in range(0, len(nodes)):
-				self.sendShareToNode(sharesToSend[i], nodes[i])
+		for i in range(0, len(nodes)):
+			self.sendShareToNode(sharesToSend[i], nodes[i], i)
 
 		return sharesToSend
 
@@ -95,7 +93,7 @@ if __name__ == "__main__":
 	fp.close()
 
 	senderDict = message.strToList(dictStr)
-	port = senderDict['port']
+	ports = senderDict['ports']
 	msg = senderDict['msg']
 	n = senderDict['n']
 	k = senderDict['k']
@@ -106,8 +104,6 @@ if __name__ == "__main__":
 	addr = mysocket.gethostname()
 	nodes = [(addr, portNum) for portNum in nodePorts]
 
-	'''
-	r = sender(port, key)
-	nodes = [(mysocket.gethostname(), 12340)]
-	shares = r.sendShares(msg, n, k, prime, nodes, mode)
-	'''
+	s = sender(ports, key)
+	shares = s.sendShares(msg, n, k, prime, nodes, mode)
+	

@@ -4,38 +4,32 @@ from modules import NO_VERIFICATION, MAC_VERIFICATION, AUX_INFO_VERIFICATION
 
 class receiver:
 
-	def __init__(self, port, key=None):
-		self.host, self.port = mysocket.gethostname(), port
-		self.sock = mysocket()
-		self.sock.bind((self.host, self.port))
+	def __init__(self, ports, key=None):
+		self.host, self.ports = mysocket.gethostname(), ports
+		self.sock = []
 		self.key = key
-		print "Receiver (%s, %d) initiated" % (self.host, self.port)
+		for port in ports:
+			self.sock.append(mysocket())
+			self.sock[-1].bind((self.host, port))
+			print "Receiver socket (%s, %d) initiated" % (self.host, port)
 
-	def getShareFromNode(self, node, buffer):
-		self.sock.connect(node)
+	def getShareFromNode(self, node, buffer, index):
 		print "-" * 50
+		print "Attempting to connect to node (Port=%d)" % node[1]
+		self.sock[index].connect(node)
 		print "Node (Port=%d) connected" % node[1]
-		share = self.sock.recv(buffer, ',')
-		self.sock.close()
+		share = self.sock[index].recv(buffer, ',')
+		self.sock[index].close()
 		print "Share received:", share
 		return share
 
 	def getShares(self, nodes, buffer):
 		shares = []
-		
-		######### Test Code ################
-		if len(nodes) == 1:
-			self.sock.listen(5)
-			c, addr = self.sock.accept()
-			shares = c.recv(buffer, ',')
-			c.close()
-			self.sock.close()
-			return message.strToList(shares)
-		######## To be removed ##############
-		
+		index = 0
 		for node in nodes:
-			share = self.getShareFromNode(node, buffer)
+			share = self.getShareFromNode(node, buffer, index)
 			shares.append(share)
+			index += 1
 
 		return shares
 
@@ -132,8 +126,10 @@ class receiver:
 	def getFaultyNodes(self, nodes, honestNodes):
 		faultyNodes = []
 		for i in range(0, len(nodes)):
-			if honestNodes[i] == True:
+			if honestNodes[i] == False:
 				faultyNodes.append(nodes[i][1])
+
+		return faultyNodes
 
 
 	def reconstructSecret(self, nodes, buffer, k, t, prime, mode=NO_VERIFICATION):
@@ -157,10 +153,8 @@ class receiver:
 		secretNum = secretSharing.reconstructSecret(sharesForRecon, k, prime)
 		secret = message.numToStr(secretNum)
 		faultyNodes = self.getFaultyNodes(nodes, honestNodes)
-		print "-" * 50
-		print "Reconstructed message:", secret
-		print "Faulty nodes:", faultyNodes
-		return [shares, secret, honestNodes]
+
+		return [secret, faultyNodes]
 
 
 #------------------------------------------------------------
@@ -170,7 +164,7 @@ if __name__ == "__main__":
 	fp.close()
 
 	recvrDict = message.strToList(dictStr)
-	port = recvrDict['port']
+	ports = recvrDict['ports']
 	t = recvrDict['t']
 	k = recvrDict['k']
 	prime = recvrDict['prime']
@@ -181,9 +175,9 @@ if __name__ == "__main__":
 	addr = mysocket.gethostname()
 	nodes = [(addr, portNum) for portNum in nodePorts]
 
-	'''
-	r = receiver(12340, key)
-	nodes = [(mysocket.gethostname(), 12341)]
-	shares, secret, honestNodes = r.reconstructSecret(nodes, buffer, k, t, prime, mode)
-	print secret
-	'''
+	r = receiver(ports, key)
+	secret, faultyNodes = r.reconstructSecret(nodes, buf, k, t, prime, mode)
+
+	print "-" * 50
+	print "Reconstructed message:", secret
+	print "Faulty nodes:", faultyNodes

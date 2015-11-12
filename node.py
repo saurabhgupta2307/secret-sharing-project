@@ -22,7 +22,7 @@ class node:
 
 	def manipulateShare(self, mode):
 		share = message.strToList(self.share)
-		if mode in NO_VERIFICATION:
+		if mode == NO_VERIFICATION:
 			share[1] = random.randint(0, share[1])
 		elif mode == AUX_INFO_VERIFICATION:
 			share[0][1] = random.randint(0, share[0][1])
@@ -47,26 +47,26 @@ class node:
 	def setShare(self, share):
 		self.share = share
 
-	def run(self, senderPort, receiverPort, buf, mode=NO_VERIFICATION, honest=True):
-		self.sock.accept(5)
+	def run(self, senderPorts, receiverPorts, buf, mode=NO_VERIFICATION, honest=True):
+		self.sock.listen(5)
 		clients = [None, None]
 		tasksDone = [False, False]
 
 		while tasksDone.count(True) != 2:
 			if clients.count(None) > 0:
 				c, addr = self.sock.accept()
-				port = c.getportnumber()
-				if port == senderPort:
+				port = addr[1] #c.getportnumber()
+				if port in senderPorts:
 					clients[0] = c
 					print "Sender (Port=%d) connected" % port
-				elif port == receiverPort:
+				elif port in receiverPorts:
 					clients[1] = c
 					print "Receiver (Port=%d) connected" % port
 				else:
-					print "Unknown node (%s, %d) connected. Dropping connection!" % (addr, port)
+					print "Unknown node %s connected. Dropping connection!" % addr
 					c.close()
 				
-			if clients[0] != None:
+			if clients[0] != None and tasksDone[0] != True:
 				self.receiveShare(clients[0], buf)
 				clients[0].close()
 				print "Share received:", self.getShare(), "\n"
@@ -89,7 +89,8 @@ class node:
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
 	parser.add_argument("-p", "--port", type=int)
-	parser.add_argument("-f", "--faulty", type=bool)
+	parser.add_argument("-f", dest="faulty", action='store_true')
+	parser.set_defaults(faulty=False)
 	args = parser.parse_args()
 
 	if args.port == None:
@@ -102,11 +103,17 @@ if __name__ == "__main__":
 	nodeDict = message.strToList(dictStr)
 	mode = nodeDict['mode']
 	buf = nodeDict['buffer']
-	senderPort = nodeDict['sender']
-	receiverPort = nodeDict['receiver']
+	senderPorts = nodeDict['sender']
+	receiverPorts = nodeDict['receiver']
 	port = args.port
+
 	if args.faulty != None:
 		honest = not args.faulty
 	else:
 		honest = True
 
+	if honest == False:
+		print "**** Faulty Node ****"
+
+	currNode = node(port)
+	currNode.run(senderPorts, receiverPorts, buf, mode, honest)
