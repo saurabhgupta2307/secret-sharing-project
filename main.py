@@ -3,6 +3,7 @@ from modules.message import message
 import argparse
 import random
 import os
+from time import time
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-n", "--nodes", type=int)
@@ -45,6 +46,8 @@ while mode not in range(1, 4):
 
 print "-" * 50
 
+startTime = time()
+
 secretNum = message.strToNum(secret)
 primes = generatePrimes()
 prime = getLargePrime(primes, secretNum, n)
@@ -59,14 +62,14 @@ nodePorts = range(minPort + 2*n, minPort + 3*n)
 
 senderDict = {'msg': secret, 'n': n, 'k': k, 'mode': mode,
 			  'prime': prime, 'key': key, 'ports': senderPorts,
-			  'nodes': nodePorts}
+			  'nodes': nodePorts, 'startTime': startTime}
 
 recvrDict = {'k': k, 'mode': mode, 't': t, 'buffer': buf,
 			  'prime': prime, 'key': key, 'ports': receiverPorts,
-			  'nodes': nodePorts}
+			  'nodes': nodePorts, 'startTime': startTime}
 
 nodeDict = {'mode': mode, 'buffer': buf, 'sender': senderPorts,
-			  'receiver': receiverPorts}
+			  'receiver': receiverPorts, 'startTime': startTime}
 
 print "n = %d, k = %d, t = %d" % (n, k, t)
 print "Sender ports:", senderPorts
@@ -85,8 +88,11 @@ fp = open("nodes.txt", "w")
 fp.write(str(nodeDict))
 fp.close()
 
-cmdStr1 = "gnome-terminal -x sh -c \"python "
-cmdStr2 = "; bash\""
+cmdStr1 = "gnome-terminal -x sh"
+cmdStr2 = " -c \"python "
+cmdStr3 = "; bash"
+cmdStr4 = "\""
+
 nodePy = "node.py"
 senderPy = "sender.py"
 receiverPy = "receiver.py"
@@ -103,13 +109,19 @@ for nodePort in nodePorts:
 		count_t += 1
 		faultyNodes.append(nodePort)
 	
-	commandString = cmdStr1 + nodePy2 + cmdStr2
+	commandString = cmdStr1 + cmdStr2 + nodePy2 
+	#commandString += cmdStr3 
+	commandString += cmdStr4
 	nodeFile = os.popen(commandString)
 
 print "Faulty Nodes:", faultyNodes
 
-commandString = cmdStr1 + senderPy + cmdStr2
+commandString = cmdStr1 + cmdStr2 + senderPy + cmdStr3 + cmdStr4
 senderFile = os.popen(commandString)
 
-commandString = cmdStr1 + receiverPy + cmdStr2
+commandString = cmdStr1 + cmdStr2 + receiverPy + cmdStr3 + cmdStr4
 receiverFile = os.popen(commandString)
+
+endTime = time()
+print "Time taken to initiate nodes:", endTime - startTime
+print "-" * 50

@@ -3,6 +3,7 @@ from modules import NO_VERIFICATION, MAC_VERIFICATION, AUX_INFO_VERIFICATION
 from modules.message import message
 import random
 import argparse
+from time import time
 
 class node:
 
@@ -105,6 +106,7 @@ if __name__ == "__main__":
 	buf = nodeDict['buffer']
 	senderPorts = nodeDict['sender']
 	receiverPorts = nodeDict['receiver']
+	initStartTime = nodeDict['startTime']
 	port = args.port
 
 	if args.faulty != None:
@@ -115,5 +117,11 @@ if __name__ == "__main__":
 	if honest == False:
 		print "**** Faulty Node ****"
 
+	startTime = time()
 	currNode = node(port)
 	currNode.run(senderPorts, receiverPorts, buf, mode, honest)
+	endTime = time()
+
+	print "Time elapsed since initialization:", endTime - initStartTime
+	print "Time of operation:", endTime - startTime
+	print "-" * 50

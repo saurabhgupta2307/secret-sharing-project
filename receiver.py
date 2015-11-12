@@ -1,6 +1,7 @@
 from modules.mysocket import mysocket
 from modules.message import message, secretSharing
 from modules import NO_VERIFICATION, MAC_VERIFICATION, AUX_INFO_VERIFICATION
+from time import time
 
 class receiver:
 
@@ -125,6 +126,9 @@ class receiver:
 
 	def getFaultyNodes(self, nodes, honestNodes):
 		faultyNodes = []
+		if len(honestNodes) == 0:
+			return faultyNodes
+
 		for i in range(0, len(nodes)):
 			if honestNodes[i] == False:
 				faultyNodes.append(nodes[i][1])
@@ -150,8 +154,13 @@ class receiver:
 		else:
 			print "invalid mode"
 
+		print "-" * 50
+		print "Reconstructing Secret from Shares", sharesForRecon
 		secretNum = secretSharing.reconstructSecret(sharesForRecon, k, prime)
-		secret = message.numToStr(secretNum)
+		try:
+			secret = message.numToStr(secretNum)
+		except TypeError:
+			secret = None
 		faultyNodes = self.getFaultyNodes(nodes, honestNodes)
 
 		return [secret, faultyNodes]
@@ -172,12 +181,21 @@ if __name__ == "__main__":
 	mode = recvrDict['mode']
 	buf = recvrDict['buffer']
 	nodePorts = recvrDict['nodes']
+	initStartTime = recvrDict['startTime']
 	addr = mysocket.gethostname()
 	nodes = [(addr, portNum) for portNum in nodePorts]
 
+	startTime = time()
 	r = receiver(ports, key)
 	secret, faultyNodes = r.reconstructSecret(nodes, buf, k, t, prime, mode)
+	if len(faultyNodes) == 0:
+		faultyNodes = None
 
+	endTime = time()
 	print "-" * 50
 	print "Reconstructed message:", secret
 	print "Faulty nodes:", faultyNodes
+	print "-" * 50
+	print "Time elapsed since initialization:", endTime - initStartTime
+	print "Time taken to reconstruct secret :", endTime - startTime
+	print "-" * 50

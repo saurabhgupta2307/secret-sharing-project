@@ -1,6 +1,8 @@
 from modules.mysocket import mysocket
 from modules.message import message, secretSharing
 from modules import NO_VERIFICATION, MAC_VERIFICATION, AUX_INFO_VERIFICATION
+import sys
+from time import time
 
 class sender:
 
@@ -83,6 +85,16 @@ class sender:
 		for i in range(0, len(nodes)):
 			self.sendShareToNode(sharesToSend[i], nodes[i], i)
 
+		msgSize = sys.getsizeof(msg)
+		shareSize = sys.getsizeof(sharesToSend[0])
+		totalSharesSize = shareSize * n
+
+		print "-" * 50
+		print "Secret Message:", msg
+		print "Message Size: %d bytes" % msgSize
+		print "Share Size: %d bytes" % shareSize
+		print "Total Shares Size: %d bytes" % totalSharesSize
+		print "-" * 50
 		return sharesToSend
 
 
@@ -101,9 +113,16 @@ if __name__ == "__main__":
 	key = senderDict['key']
 	mode = senderDict['mode']
 	nodePorts = senderDict['nodes']
+	initStartTime = senderDict['startTime']
 	addr = mysocket.gethostname()
 	nodes = [(addr, portNum) for portNum in nodePorts]
 
+	startTime = time()
 	s = sender(ports, key)
 	shares = s.sendShares(msg, n, k, prime, nodes, mode)
+	endTime = time()
+
+	print "Time elapsed since initialization:", endTime - initStartTime
+	print "Time taken to send shares:", endTime - startTime
+	print "-" * 50
 	
