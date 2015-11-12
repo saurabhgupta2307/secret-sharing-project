@@ -72,9 +72,9 @@ nodeDict = {'mode': mode, 'buffer': buf, 'sender': senderPorts,
 			  'receiver': receiverPorts, 'startTime': startTime}
 
 print "n = %d, k = %d, t = %d" % (n, k, t)
-print "Sender ports:", senderPorts
-print "Receiver ports:", receiverPorts
-print "Server node ports:", nodePorts
+#print "Sender ports:", senderPorts
+#print "Receiver ports:", receiverPorts
+#print "Server node ports:", nodePorts
 
 fp = open("sender.txt", "w")
 fp.write(str(senderDict))
@@ -114,6 +114,9 @@ for nodePort in nodePorts:
 	commandString += cmdStr4
 	nodeFile = os.popen(commandString)
 
+if len(faultyNodes) == 0:
+	faultyNodes = None
+	
 print "Faulty Nodes:", faultyNodes
 
 commandString = cmdStr1 + cmdStr2 + senderPy + cmdStr3 + cmdStr4
