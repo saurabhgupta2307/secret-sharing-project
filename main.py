@@ -9,6 +9,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-n", "--nodes", type=int)
 parser.add_argument("-k", "--klimit", type=int)
 parser.add_argument("-t", "--tolerance", type=int)
+parser.add_argument("-v", "--verbose", dest="verbose", action='store_true')
+parser.set_defaults(verbose=False)
 args = parser.parse_args()
 
 if args.nodes == None:
@@ -98,31 +100,39 @@ senderPy = "sender.py"
 receiverPy = "receiver.py"
 portOption = " -p "
 faultyOption = " -f"
-count_t = 0
+verboseOption = " -v"
+
 faultyNodes = []
 
 for nodePort in nodePorts:
 	i = random.randint(0, n)
 	nodePy2 = nodePy + portOption + str(nodePort)
-	if i < t and count_t < t:
+	if i < t and len(faultyNodes) < t:
 		nodePy2 += faultyOption
-		count_t += 1
 		faultyNodes.append(nodePort)
 	
 	commandString = cmdStr1 + cmdStr2 + nodePy2 
+	if args.verbose == True:
+		commandString += verboseOption
 	#commandString += cmdStr3 
 	commandString += cmdStr4
 	nodeFile = os.popen(commandString)
 
 if len(faultyNodes) == 0:
 	faultyNodes = None
-	
+
 print "Faulty Nodes:", faultyNodes
 
-commandString = cmdStr1 + cmdStr2 + senderPy + cmdStr3 + cmdStr4
+commandString = cmdStr1 + cmdStr2 + senderPy 
+if args.verbose == True:
+	commandString += verboseOption
+commandString += cmdStr3 + cmdStr4
 senderFile = os.popen(commandString)
 
-commandString = cmdStr1 + cmdStr2 + receiverPy + cmdStr3 + cmdStr4
+commandString = cmdStr1 + cmdStr2 + receiverPy 
+if args.verbose == True:
+	commandString += verboseOption
+commandString += cmdStr3 + cmdStr4
 receiverFile = os.popen(commandString)
 
 endTime = time()

@@ -2,6 +2,7 @@ from modules.mysocket import mysocket
 from modules.message import message, secretSharing
 from modules import NO_VERIFICATION, MAC_VERIFICATION, AUX_INFO_VERIFICATION
 from time import time
+import argparse
 
 class receiver:
 
@@ -168,6 +169,11 @@ class receiver:
 
 #------------------------------------------------------------
 if __name__ == "__main__":
+	parser = argparse.ArgumentParser()
+	parser.add_argument("-v", "--verbose", dest="verbose", action='store_true')
+	parser.set_defaults(verbose=False)
+	args = parser.parse_args()
+
 	fp = open("receiver.txt", "r")
 	dictStr = fp.read()
 	fp.close()
