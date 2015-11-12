@@ -26,6 +26,7 @@ else:
 secret = None
 mode = 0
 
+print "-" * 50
 while secret == None or len(secret) not in range(1, 151):
 	secret = raw_input("Enter the secret message (Max length 150): ")
 	if len(secret) > 150:

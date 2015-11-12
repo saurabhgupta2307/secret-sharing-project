@@ -90,7 +90,7 @@ class receiver:
 					z = j+1
 				resultMatrix[i][z] = message.verifyAuxInfo(si, yij, bij, cij, prime)
 
-			if resultMatrix[i].count(False) >= t:
+			if t > 0 and resultMatrix[i].count(False) >= t:
 				acceptAuxInfo[i] = False
 
 		return acceptAuxInfo
