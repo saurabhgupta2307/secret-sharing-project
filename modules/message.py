@@ -229,35 +229,3 @@ class secretSharing:
 			secret = (secret + prime + (yi * term)) % prime
 
 		return secret
-
-
-#------------------------------------------------------------
-if __name__ == "__main__":
-	# Test code
-	msg = "lets try one really long message to see if it works for all messages."
-	secretNum = message.strToNum(msg)
-	n, k = 2, 2
-
-	primes = generatePrimes()
-	prime = getLargePrime(primes, secretNum, n)
-	print prime
-	if prime is None:
-		raise ValueError("message too long")
-
-	shares = secretSharing.generateShares(secretNum, n, k, prime)
-	#shares = sorted(shares, key=lambda x: x[0])
-	secret = secretSharing.reconstructSecret(shares, k, prime)
-
-	print len(msg), len(str(secretNum)), (secretNum == secret) 
-
-	#------------------------------------------------------------
-
-	shareStr = message.listToStr(shares)
-	shareNum = message.strToNum(shareStr)
-	shareBase64 = message.strToBase64(shareStr)
-
-	share2 = message.strToList(message.numToStr(shareNum))
-	share3 = message.strToList(message.base64ToStr(shareBase64))
-
-	print len(shareStr), len(str(shareNum)), len(shareBase64), shares == share2, shares == share3
-	print shareBase64
