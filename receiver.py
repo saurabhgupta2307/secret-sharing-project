@@ -5,11 +5,11 @@ Description goes here..
 """
 
 #################### Import modules #########################
-from time import time
 import argparse
+from time import time
 from modules.mysocket import mysocket
 from modules.message import message, secretSharing
-from modules import NO_VERIFICATION, MAC_VERIFICATION, AUX_INFO_VERIFICATION
+from modules.message import NO_VERIFICATION, MAC_VERIFICATION, AUX_INFO_VERIFICATION
 
 #################### Module Metadata ########################
 __author__ = "Saurabh Gupta, Omkar Kaptan"

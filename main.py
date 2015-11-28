@@ -9,8 +9,7 @@ import argparse
 import random
 import os
 from time import time
-from modules import generatekey, generatePrimes, getLargePrime
-from modules.message import message
+from modules.message import message, generatekey, getLargePrime
 
 #################### Module Metadata ########################
 __author__ = "Saurabh Gupta, Omkar Kaptan"
