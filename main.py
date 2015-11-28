@@ -1,3 +1,6 @@
+#!/usr/bin/python
+
+#################### Import modules #########################
 from modules import generatekey, generatePrimes, getLargePrime
 from modules.message import message
 import argparse
@@ -52,7 +55,7 @@ startTime = time()
 
 secretNum = message.strToNum(secret)
 primes = generatePrimes()
-prime = getLargePrime(primes, secretNum, n)
+prime = getLargePrime(primes, secretNum)
 
 key = generatekey(256)
 buf = 1024
@@ -74,9 +77,6 @@ nodeDict = {'mode': mode, 'buffer': buf, 'sender': senderPorts,
 			  'receiver': receiverPorts, 'startTime': startTime}
 
 print "n = %d, k = %d, t = %d" % (n, k, t)
-#print "Sender ports:", senderPorts
-#print "Receiver ports:", receiverPorts
-#print "Server node ports:", nodePorts
 
 fp = open("sender.txt", "w")
 fp.write(str(senderDict))
@@ -114,7 +114,7 @@ for nodePort in nodePorts:
 	commandString = cmdStr1 + cmdStr2 + nodePy2 
 	if args.verbose == True:
 		commandString += verboseOption
-	#commandString += cmdStr3 
+		commandString += cmdStr3 
 	commandString += cmdStr4
 	nodeFile = os.popen(commandString)
 
@@ -138,3 +138,5 @@ receiverFile = os.popen(commandString)
 endTime = time()
 print "Time taken to initiate nodes:", endTime - startTime
 print "-" * 50
+
+##################### End of Code ###########################

@@ -1,3 +1,6 @@
+#!/usr/bin/python
+
+#################### Import modules #########################
 from modules.mysocket import mysocket
 from modules.message import message, secretSharing
 from modules import NO_VERIFICATION, MAC_VERIFICATION, AUX_INFO_VERIFICATION
@@ -5,6 +8,10 @@ import sys
 import argparse
 from time import time
 
+
+#############################################################
+#                    Class: sender	                        #
+#############################################################
 class sender:
 
 	def __init__(self, ports, key=None):
@@ -132,3 +139,4 @@ if __name__ == "__main__":
 	print "Time taken to send shares:", endTime - startTime
 	print "-" * 50
 	
+##################### End of Code ###########################

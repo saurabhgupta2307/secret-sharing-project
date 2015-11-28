@@ -1,8 +1,15 @@
+#!/usr/bin/python
+
+#################### Import modules #########################
 from modules.mysocket import mysocket
 from modules.message import message, secretSharing
 from modules import NO_VERIFICATION, MAC_VERIFICATION, AUX_INFO_VERIFICATION
 from time import time
 import argparse
+
+#############################################################
+#                    Class: receiver                        #
+#############################################################
 
 class receiver:
 
@@ -205,3 +212,5 @@ if __name__ == "__main__":
 	print "Time elapsed since initialization:", endTime - initStartTime
 	print "Time taken to reconstruct secret :", endTime - startTime
 	print "-" * 50
+
+##################### End of Code ###########################

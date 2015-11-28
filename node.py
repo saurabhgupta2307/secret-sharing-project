@@ -1,9 +1,16 @@
+#!/usr/bin/python
+
+#################### Import modules #########################
 from modules.mysocket import mysocket
 from modules import NO_VERIFICATION, MAC_VERIFICATION, AUX_INFO_VERIFICATION
 from modules.message import message
 import random
 import argparse
 from time import time
+
+#############################################################
+#                    Class: node	                        #
+#############################################################
 
 class node:
 
@@ -127,3 +134,5 @@ if __name__ == "__main__":
 	print "Time elapsed since initialization:", endTime - initStartTime
 	print "Time of operation:", endTime - startTime
 	print "-" * 50
+
+##################### End of Code ###########################
