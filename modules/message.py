@@ -64,15 +64,14 @@ def generatePrimes():
 	return primes
 
 
-def getLargePrime(primes, num):
+def getLargePrime(num):
 	"""Returns a prime number larger than the given num.
 
-	Validates the types of primes list and the num value, and returns
+	Generates the list of prime numbers using generatePrimes, and returns
 	the smallest prime in primes list larger than num. If num is larger
 	than all primes, return None.
 
 	Args:
-		primes: A list of prime numbers.
 		num: An integer value corresponding to which the required prime 
 			 should be larger.
 
@@ -80,22 +79,13 @@ def getLargePrime(primes, num):
 		A integer prime value larger than the given num.
 
 	Raises:
-		TypeError: Errors occuring when the primes is not a list of integers, 
-			or num is not an integer. 
-		ValueError: Errors occuring when the given value of primes is an empty list. 
+		TypeError: Error when num is not an integer. 
 	"""
 
-	if type(primes) != list:
-		raise TypeError("invalid primes: list expected")
-	elif len(primes) == 0:
-		raise ValueError("invalid primes: non-empty list expected")
-	elif type(num) not in [int, long]:
+	if type(num) not in [int, long]:
 		raise TypeError("invalid num: int or long expected")
-	else:
-		for prime in primes:
-			if type(prime) not in [int, long]:
-				raise TypeError("invalid primes: int or long values expected")
 
+	primes = generatePrimes()
 	largePrimes = [n for n in primes if n > num]
 	if len(largePrimes) > 0:
 		return largePrimes[0]

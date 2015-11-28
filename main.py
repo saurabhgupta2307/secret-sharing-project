@@ -8,88 +8,7 @@ import random
 import os
 from time import time
 
-parser = argparse.ArgumentParser()
-parser.add_argument("-n", "--nodes", type=int)
-parser.add_argument("-k", "--klimit", type=int)
-parser.add_argument("-t", "--tolerance", type=int)
-parser.add_argument("-v", "--verbose", dest="verbose", action='store_true')
-parser.set_defaults(verbose=False)
-args = parser.parse_args()
-
-if args.nodes == None:
-	raise RuntimeError("Missing n (number of nodes)")
-elif args.klimit == None:
-	raise RuntimeError("Missing k")
-
-n = args.nodes
-k = args.klimit
-
-if args.tolerance == None:
-	t = 0
-else: 
-	t = min(args.tolerance, k-1, n-k-1)
-
-secret = None
-mode = 0
-
-print "-" * 50
-while secret == None or len(secret) not in range(1, 151):
-	secret = raw_input("Enter the secret message (Max length 150): ")
-	if len(secret) > 150:
-		print "Message too long!"
-	elif len(secret) < 1:
-		print "Invalid message: empty input!"
-
-print "-" * 50
-print "Select a mode of verification:"
-print "1. No Verification"
-print "2. Information Theoretic Verification"
-print "3. MAC Verification"
-while mode not in range(1, 4):
-	modeStr = raw_input("[1-3]: ")
-	mode = int(modeStr)
-
-print "-" * 50
-
-startTime = time()
-
-secretNum = message.strToNum(secret)
-primes = generatePrimes()
-prime = getLargePrime(primes, secretNum)
-
-key = generatekey(256)
-buf = 1024
-
-minPort = random.randint(12345, 23456)
-senderPorts = range(minPort, minPort + n)
-receiverPorts = range(minPort + n, minPort + 2*n)
-nodePorts = range(minPort + 2*n, minPort + 3*n)
-
-senderDict = {'msg': secret, 'n': n, 'k': k, 'mode': mode,
-			  'prime': prime, 'key': key, 'ports': senderPorts,
-			  'nodes': nodePorts, 'startTime': startTime}
-
-recvrDict = {'k': k, 'mode': mode, 't': t, 'buffer': buf,
-			  'prime': prime, 'key': key, 'ports': receiverPorts,
-			  'nodes': nodePorts, 'startTime': startTime}
-
-nodeDict = {'mode': mode, 'buffer': buf, 'sender': senderPorts,
-			  'receiver': receiverPorts, 'startTime': startTime}
-
-print "n = %d, k = %d, t = %d" % (n, k, t)
-
-fp = open("sender.txt", "w")
-fp.write(str(senderDict))
-fp.close()
-
-fp = open("receiver.txt", "w")
-fp.write(str(recvrDict))
-fp.close()
-
-fp = open("nodes.txt", "w")
-fp.write(str(nodeDict))
-fp.close()
-
+######### Global variables for command strings ##############
 cmdStr1 = "gnome-terminal -x sh"
 cmdStr2 = " -c \"python "
 cmdStr3 = "; bash"
@@ -98,45 +17,209 @@ cmdStr4 = "\""
 nodePy = "node.py"
 senderPy = "sender.py"
 receiverPy = "receiver.py"
+
 portOption = " -p "
 faultyOption = " -f"
 verboseOption = " -v"
 
-faultyNodes = []
+#################### Method Definitions #####################
 
-for nodePort in nodePorts:
-	i = random.randint(0, n)
-	nodePy2 = nodePy + portOption + str(nodePort)
-	if i < t and len(faultyNodes) < t:
-		nodePy2 += faultyOption
-		faultyNodes.append(nodePort)
-	
-	commandString = cmdStr1 + cmdStr2 + nodePy2 
-	if args.verbose == True:
+def getSecretMessage(limit):
+	"""Gets a secret message from the user such that the message is not 
+	longer than the limit, and returns the message. 
+
+	Args:
+		limit: An integer defining the maximum message length allowed. 
+
+	Returns:
+		A string secret as per valid user input.
+	"""
+
+	secret = None
+	while secret == None or len(secret) not in range(1, limit+1):
+		secret = raw_input("Enter the secret message (Max length %d): " % limit)
+		if len(secret) > limit:
+			print "Invalid message: too long!"
+		elif len(secret) < 1:
+			print "Invalid message: empty input!"
+
+	return secret
+
+def getVerificationMode():
+	"""Gets an integer value in the range [1-3], corresponding to the verification 
+	modes, from the user and returns the value. 
+
+	Returns:
+		An integer in the range [1-3] for the corresponding verification mode.
+	"""
+
+	mode = 0
+	print "Select a mode of verification:"
+	print "1. No Verification"
+	print "2. Information Theoretic Verification"
+	print "3. MAC Verification"
+
+	while mode not in range(1, 4):
+		modeStr = raw_input("[1-3]: ")
+		try:
+			mode = int(modeStr)
+			if mode not in range(1, 4):
+				raise ValueError()
+		except:
+			print "Invalid input: integer in range [1-3] expected."
+			mode = 0
+
+	return mode
+
+def generateFile(data, fileName):
+	"""Writes a dictionary object data into the file with specified fileName. 
+
+	Args:
+		data: A dictionary object to be written to the file.
+		fileName: A string representing the name of the file to write into.
+
+	Raises:
+		TypeError: Error when data is not a dictionary, or when fileName is
+			not a string.
+	"""
+
+	if type(data) != dict:
+		raise TypeError("invalid data: dict expected")
+	elif type(fileName) != str:
+		raise TypeError("invalid fileName: str expected")
+
+	fp = open(fileName, "w")
+	fp.write(str(data))
+	fp.close()
+
+def initNodes(n, t, nodePorts, verbose):
+	"""Initializes n intermediate nodes, while selecting at most t of them 
+	as faulty, and invokes bash shell windows for each node by constructing 
+	command strings for them. When verbose is true, the windows stay active 
+	after completion, else they terminate. 
+
+	Args:
+		n: An integer defining the number of nodes. 
+		t: An integer defining the maximum number of faulty nodes.
+		nodePorts: A list of integers representing the port numbers for nodes.
+		verbose: A boolean specifying whether or not the verbose option is 
+			selected in the command string.
+
+	Returns:
+		A list of integers representing port numbers of faulty nodes.
+	"""
+
+	faultyNodes = []
+
+	for nodePort in nodePorts:
+		i = random.randint(0, n)
+		nodePy2 = nodePy + portOption + str(nodePort)
+		
+		if i < t and len(faultyNodes) < t:
+			nodePy2 += faultyOption
+			faultyNodes.append(nodePort)
+		
+		commandString = cmdStr1 + cmdStr2 + nodePy2 
+		if verbose == True:
+			commandString += verboseOption
+			commandString += cmdStr3 
+		
+		commandString += cmdStr4
+		nodeFile = os.popen(commandString)
+
+	if len(faultyNodes) == 0:
+		faultyNodes = None
+
+	return faultyNodes
+
+def initClient(clientPy, verbose):
+	"""Initializes a client node using the clientPy code and invokes a bash 
+	shell window by constructing a command string for it. Verbose option is 
+	passed to the clientPy for reference. 
+
+	Args:
+		clientPy: A string representing the file name of code script to be 
+			executed for the client.
+		verbose: A boolean specifying whether or not the verbose option is 
+			selected in the command string.
+	"""
+
+	commandString = cmdStr1 + cmdStr2 + clientPy 
+	if verbose == True:
 		commandString += verboseOption
-		commandString += cmdStr3 
-	commandString += cmdStr4
-	nodeFile = os.popen(commandString)
+	commandString += cmdStr3 + cmdStr4
+	senderFile = os.popen(commandString)
 
-if len(faultyNodes) == 0:
-	faultyNodes = None
 
-print "Faulty Nodes:", faultyNodes
+#############################################################
+#					Boilerplate Code						#
+#############################################################
 
-commandString = cmdStr1 + cmdStr2 + senderPy 
-if args.verbose == True:
-	commandString += verboseOption
-commandString += cmdStr3 + cmdStr4
-senderFile = os.popen(commandString)
+if __name__ == "__main__":
+	parser = argparse.ArgumentParser(description="Initiate secret sharing demo")
+	parser.add_argument("-n", "--nodes", type=int)
+	parser.add_argument("-k", "--klimit", type=int)
+	parser.add_argument("-t", "--tolerance", type=int)
+	parser.add_argument("-v", "--verbose", dest="verbose", action='store_true')
+	parser.set_defaults(verbose=False)
 
-commandString = cmdStr1 + cmdStr2 + receiverPy 
-if args.verbose == True:
-	commandString += verboseOption
-commandString += cmdStr3 + cmdStr4
-receiverFile = os.popen(commandString)
+	args = parser.parse_args()
 
-endTime = time()
-print "Time taken to initiate nodes:", endTime - startTime
-print "-" * 50
+	if args.nodes == None:
+		parser.error("Missing -n")
+	elif args.klimit == None:
+		parser.error("Missing -k")
+
+	n = args.nodes
+	k = args.klimit
+
+	if args.tolerance == None:
+		t = 0
+	else: 
+		t = min(args.tolerance, k-1, n-k-1)
+
+	print "-" * 50
+	secret = getSecretMessage(150)
+	print "-" * 50
+	mode = getVerificationMode()
+	print "-" * 50
+
+	startTime = time()
+
+	secretNum = message.strToNum(secret)
+	prime = getLargePrime(secretNum)
+	key = generatekey(256)
+	buf = 1024
+
+	minPort = random.randint(12345, 23456)
+	senderPorts = range(minPort, minPort + n)
+	receiverPorts = range(minPort + n, minPort + 2*n)
+	nodePorts = range(minPort + 2*n, minPort + 3*n)
+
+	senderDict = {'msg': secret, 'n': n, 'k': k, 'mode': mode,
+				  'prime': prime, 'key': key, 'ports': senderPorts,
+				  'nodes': nodePorts, 'startTime': startTime}
+
+	recvrDict = {'k': k, 'mode': mode, 't': t, 'buffer': buf,
+				  'prime': prime, 'key': key, 'ports': receiverPorts,
+				  'nodes': nodePorts, 'startTime': startTime}
+
+	nodeDict = {'mode': mode, 'buffer': buf, 'sender': senderPorts,
+				  'receiver': receiverPorts, 'startTime': startTime}
+
+	generateFile(senderDict, "sender.txt")
+	generateFile(recvrDict, "receiver.txt")
+	generateFile(nodeDict, "nodes.txt")
+
+	faultyNodes = initNodes(n, t, nodePorts, args.verbose)
+	initClient(senderPy, args.verbose)
+	initClient(receiverPy, args.verbose)
+
+	endTime = time()
+
+	print "n = %d, k = %d, t = %d" % (n, k, t)
+	print "Faulty Nodes:", faultyNodes
+	print "Time taken to initiate nodes:", endTime - startTime
+	print "-" * 50
 
 ##################### End of Code ###########################
