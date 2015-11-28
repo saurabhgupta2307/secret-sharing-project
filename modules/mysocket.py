@@ -1,7 +1,17 @@
 #!/usr/bin/python
 
+"""
+Description goes here..
+"""
+
 #################### Import modules #########################
 import socket
+
+#################### Module Metadata ########################
+__author__ = "Saurabh Gupta, Omkar Kaptan"
+__email__ = "saurabhgupta@asu.edu, okaptan@asu.edu"
+__license__ = "GPL"
+__version__ = "1.0"
 
 #############################################################
 #                    Class: mysocket                        #
@@ -78,15 +88,17 @@ class mysocket:
         """Listen for connections made to the socket. 
 
         Args:
-            backlog: An integer value specifying the maximum number of queued connections.
+            backlog: An integer value specifying the maximum number of queued 
+                connections.
         """
         self.sock.listen(backlog)
 
     def send(self, msg, separator):
-        """Sends the arbitrary length msg over the socket connection by concatenating the 
-        message length at the beginning of the message separated by the given separator. It 
-        sends the message in chunks based on the number of bytes accepted by the receiver in
-        preceding transmission.
+        """Sends the arbitrary length msg over the socket connection by 
+        concatenating the message length at the beginning of the message 
+        separated by the given separator. It sends the message in chunks 
+        based on the number of bytes accepted by the receiver in preceding 
+        transmission.
 
         Args:
             msg: A string message to be sent.
@@ -120,20 +132,23 @@ class mysocket:
         return totalsent
 
     def recv(self, buffer, separator):
-        """Receive an arbitrary length msg over the socket connection using the message 
-        length concatenated at the beginning of the message separated by the given separator. 
-        It receives the message in chunks based on the buffer size.
+        """Receive an arbitrary length msg over the socket connection using 
+        the message length concatenated at the beginning of the message 
+        separated by the given separator. It receives the message in chunks 
+        based on the buffer size.
 
         Args:
             buffer: A integer value specifying the buffer size for receiving data.
-            separator: A string used as separator between message length and message content.
+            separator: A string used as separator between message length and 
+                message content.
 
         Returns:
             A string corresponding to the received message.
 
         Raises:
             RuntimeError: Error when no data received from the connection.
-            TypeError: Error when buffer is not an integer, or when separator is not a string.
+            TypeError: Error when buffer is not an integer, or when separator 
+                is not a string.
             ValueError: Error when received message has invalid format.
         """
 

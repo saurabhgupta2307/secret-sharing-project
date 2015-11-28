@@ -1,13 +1,23 @@
 #!/usr/bin/python
 
+"""
+Description goes here..
+"""
 
 #################### Import modules #########################
 import binascii
-import random
 import hmac
 import hashlib
 import base64
 import ast
+import os
+import math
+
+#################### Module Metadata ########################
+__author__ = "Saurabh Gupta, Omkar Kaptan"
+__email__ = "saurabhgupta@asu.edu, okaptan@asu.edu"
+__license__ = "GPL"
+__version__ = "1.0"
 
 ########### Global Variables for Verification Modes #########
 NO_VERIFICATION = 1
@@ -17,7 +27,8 @@ MAC_VERIFICATION = 3
 #################### Method Definitions #####################
 
 def generatekey(length=256):
-	"""Generates a random base64 key of given length.
+	"""Generates a cryptographically secure random base64 key of 
+	given length.
 
 	Checks if the given length is a valid int or long, enforces
 	the length to be of minimum value 256, generates the key of 
@@ -35,15 +46,44 @@ def generatekey(length=256):
 	"""
 
 	if type(length) not in [int, long]:
-		raise TypeError("invalid message: int or long expected")
+		raise TypeError("invalid length: int or long expected")
 	elif length < 256:
 		length = 256
 
-	return message.numToBase64(random.randint(0, 2**length - 1))
+	return message.strToBase64(os.urandom(length/8))
+
+def genRandNum(maximum=2):
+	"""Generates a cryptographically secure random number less than 
+	given maximum value. The method enforces the maximum value to be
+	at least 2. 
+
+	Args:
+		maximum: An integer defining the value corresponding to which 
+			the generated number should be smaller. Default value = 2
+
+	Returns:
+		A randomly generated integer less than given maximum value.
+
+	Raises:
+		TypeError: Error when the provided maximum is not an int or long.
+	"""
+
+	if type(maximum) not in [int, long]:
+		raise TypeError("invalid maximum: int or long expected")
+	elif maximum < 2:
+		maximum = 2
+
+	length = int(math.ceil(float(len(bin(maximum)[2:])) / 8))
+	num = maximum
+
+	while num >= maximum:
+		num = message.strToNum(os.urandom(length))
+
+	return num
 
 
 def generatePrimes():
-	"""Generates set of prime numbers using Marsenne Primes and 
+	"""Generates set of prime numbers using Mersenne Primes and 
 	known large primes.
 
 	Returns:
@@ -87,6 +127,7 @@ def getLargePrime(num):
 
 	primes = generatePrimes()
 	largePrimes = [n for n in primes if n > num]
+
 	if len(largePrimes) > 0:
 		return largePrimes[0]
 	else:
@@ -148,6 +189,7 @@ class message:
 
 		if type(msgString) != str:
 			raise TypeError("invalid message: str expected")
+
 		return int(binascii.hexlify(msgString), 16)
 
 	@staticmethod
@@ -166,6 +208,7 @@ class message:
 
 		if type(msgNum) not in [int, long]:
 			raise TypeError("invalid message: int or long expected")
+
 		return binascii.unhexlify('%x' % msgNum)
 
 	@staticmethod
@@ -184,6 +227,7 @@ class message:
 
 		if type(msgList) != list:
 			raise TypeError("invalid message: list expected")
+
 		return str(msgList)
 		
 	@staticmethod
@@ -202,6 +246,7 @@ class message:
 
 		if type(msg) != str:
 			raise TypeError("invalid message: string expected")
+
 		return base64.b64encode(msg)
 
 	@staticmethod
@@ -243,6 +288,7 @@ class message:
 
 		if type(msgNum) not in [int, long]:
 			raise TypeError("invalid message: int or long expected")
+
 		return message.strToBase64(bytes(msgNum))
 
 	@staticmethod
@@ -291,48 +337,6 @@ class message:
 		return str(msgList)
 
 	@staticmethod
-	def generateHash(msg):
-		"""Generate a base64 SHA256 hash for the given msg. 
-
-		Args:
-			msg: A string for which the hash is required.
-
-		Returns:
-			A base64 string SHA256 hash for the given msg.
-
-		Raises:
-			TypeError: Error when msg is not a string value.
-		"""
-
-		if type(msg) != str:
-			raise TypeError("invalid msg: str expected")
-		dig = hashlib.sha256(msg).digest()
-		hashValue = base64.b64encode(dig)
-		return hashValue
-
-	@staticmethod
-	def verifyHash(msg, hashValue):
-		"""Canonically verifies the given hashValue for the given msg. 
-
-		Args:
-			msg: A string message for which the hash is to be verified.
-			hashValue: A string hash value to be verified.
-
-		Returns:
-			A boolean corresponding to the verification. True if hashValue
-			is a valid hash for the msg, and False otherwise.
-
-		Raises:
-			TypeError: Error when either the msg or hashValue is not a string.
-		"""
-
-		if type(msg) != str:
-			raise TypeError("invalid msg: string expected")
-		elif type(hashValue) != str:
-			raise TypeError("invalid hash: string expected")
-		return message.generateHash(msg) == hashValue
-
-	@staticmethod
 	def generateMac(msg, key):
 		"""Generates a base64 SHA256 based HMAC tag for the given msg using the 
 		given key. 
@@ -352,7 +356,9 @@ class message:
 			raise TypeError("invalid msg: string expected")
 		elif type(key) != str:
 			raise TypeError("invalid key: string expected")
-		dig = hmac.new(key, msg, hashlib.sha256).digest()
+
+		keyString = message.base64ToStr(key)	
+		dig = hmac.new(keyString, msg, hashlib.sha256).digest()
 		tag = base64.b64encode(dig)
 		return tag
 
@@ -380,20 +386,23 @@ class message:
 			raise TypeError("invalid msg: str expected")
 		elif type(tag) != str:
 			raise TypeError("invalid msg: str expected")
+
 		return message.generateMac(msg, key) == tag
 
 	@staticmethod
 	def generateAuxInfo(s, prime):
-		"""Generates auxilliary information for a msg integer s to satisfy the quation
-		c = bs + y where b and y are randomly generated numbers. Each of c, b and y are
-		values module prime. 
+		"""Generates auxilliary information for a msg integer s to satisfy the 
+		quation c = bs + y where b and y are randomly generated numbers. Each 
+		of c, b and y are values module prime. 
 
 		Args:
-			s: A integer message for which the auxilliary information is to be generated.
+			s: A integer message for which the auxilliary information is to be 
+				generated.
 			prime: A integer value specifying the prime field for modulo operations.
 
 		Returns:
-			A list consisting of values [c, b, y] that satisfies the equation c = bs + y.
+			A list consisting of values [c, b, y] that satisfies the equation 
+				c = bs + y.
 
 		Raises:
 			TypeError: Error when either the s or prime is not a integer.
@@ -407,15 +416,15 @@ class message:
 		elif s >= prime:
 			raise ValueError("invalid prime: value larger than s expected")
 
-		b = random.randint(0, prime)
-		y = random.randint(0, prime)
+		b = genRandNum(prime)
+		y = genRandNum(prime)
 		c = (b * s + y) % prime
 		return [c, b, y]
 
 	@staticmethod
 	def verifyAuxInfo(s, y, b, c, prime):
-		"""Verifies the given values of s, y, b and c for the equation c = bs + y using 
-		prime as the order of modulo operations. 
+		"""Verifies the given values of s, y, b and c for the equation c = bs + y 
+		using prime as the order of modulo operations. 
 
 		Args:
 			s: An integer value.
@@ -488,26 +497,26 @@ class secretSharing:
 	@staticmethod
 	def evaluatePolynomial(msgNum, coefficients, n, prime):
 		"""Generates shares of the integer msgNum by evaluating the polynomial 
-		y = msgNum + c[0]*x + c[1]*x^2 + ... + c[n-2]*x^(n-1) using the list coefficients 
-		as the list of c[i] values for n different values of x and returns a list of 
-		n pairs [x, y]. The prime value is used as the order of modulo operations is 
-		all the evaluations.
+		y = msgNum + c[0]*x + c[1]*x^2 + ... + c[n-2]*x^(n-1) using the list 
+		coefficients as the list of c[i] values for n different values of x and 
+		returns a list of n pairs [x, y]. The prime value is used as the order 
+		of modulo operations is all the evaluations.
 
 		Args:
-			msgNum: An integer value specifying the message for which the shares are 
-					to be generated.
-			coefficients: A list if integer values to be used as coefficients in the 
-					polynomial evaluation.
+			msgNum: An integer value specifying the message for which the shares 
+				are to be generated.
+			coefficients: A list if integer values to be used as coefficients in 
+				the polynomial evaluation.
 			n: An integer value representing the number of shares to be generated.
 			prime: An integer value to be used as the order of modulo operations.
 
 		Returns:
-			A list of n shares of the form [x, y] generated by polynomial evaluations
-			for different values of x.
+			A list of n shares of the form [x, y] generated by polynomial 
+			evaluations for different values of x.
 
 		Raises:
-			TypeError: Error when either num, n or prime is not an integer, or when 
-			coefficients is not a list of integers.
+			TypeError: Error when either num, n or prime is not an integer, or 
+				when coefficients is not a list of integers.
 		"""	
 
 		if type(msgNum) not in [int, long]:
@@ -537,12 +546,13 @@ class secretSharing:
 
 	@staticmethod
 	def randomPolynomial(k, prime):
-		"""Generates a random polynomial y = msgNum + c[0]*x + c[1]*x^2 + ... + c[k-2]*x^(k-1) 
-		by ranadomly generating the list of coefficients c[i] using prime as the order of
-		modulo operations.
+		"""Generates a random polynomial y = msgNum + c[0]*x + c[1]*x^2 + ... 
+		+ c[k-2]*x^(k-1) by generating the list of cryptographically secure 
+		coefficients c[i] using prime as the order of modulo operations.
 
 		Args:
-			k: An integer value representing the number of coefficients to be generated.
+			k: An integer value representing the number of coefficients to be 
+				generated.
 			prime: An integer value to be used as the order of modulo operations.
 
 		Returns:
@@ -560,27 +570,30 @@ class secretSharing:
 
 		coefficients = []
 		for i in range(1, k):
-			coefficients.append(random.randint(0, prime))	
+			coefficients.append(genRandNum(prime))	
+		
 		return coefficients	
 
 	@staticmethod
 	def generateShares(msg, n, k, prime):
-		"""Generates n shares for the msg such that any k shares can be used for 
-		reconstructing the msg. The prime value is used as the order of modulo operations.
+		"""Generates n shares for the msg such that any k shares can be used 
+		for reconstructing the msg. The prime value is used as the order of 
+		modulo operations.
 
 		Args:
 			msg: A string message for which the shares are to be generated.
 			n: An integer value representing the number of shares to be generated.
-			k: An integer value representing the number of shares that are required for 
-				reconstructing the msg.
+			k: An integer value representing the number of shares that are 
+				required for reconstructing the msg.
 			prime: An integer value to be used as the order of modulo operations.
 
 		Returns:
-			A list of n shares of the form [x, y] generated by the evaluatePolynomial method.
+			A list of n shares of the form [x, y] generated by the 
+			evaluatePolynomial method.
 
 		Raises:
-			TypeError: Error when either n, k or prime is not an integer, or when msg is 
-				not a string.
+			TypeError: Error when either n, k or prime is not an integer, or 
+				when msg is not a string.
 			ValueError: Error when n and k do not satisfy n > k > 1.
 		"""
 
@@ -611,16 +624,17 @@ class secretSharing:
 		Args:
 			msg: A string message for which the shares are to be generated.
 			n: An integer value representing the number of shares to be generated.
-			k: An integer value representing the number of shares that are required for 
-				reconstructing the msg.
+			k: An integer value representing the number of shares that are 
+				required for reconstructing the msg.
 			prime: An integer value to be used as the order of modulo operations.
 
 		Returns:
-			A list of n shares of the form [x, y] generated by the evaluatePolynomial method.
+			A list of n shares of the form [x, y] generated by the 
+			evaluatePolynomial method.
 
 		Raises:
-			TypeError: Error when either k or prime is not an integer, or when shares is not
-				a list of [int, int] lists.
+			TypeError: Error when either k or prime is not an integer, or when 
+				shares is not a list of [int, int] lists.
 			ValueError: Error when k < 2 or when number of shares is less than k.
 		"""
 

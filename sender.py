@@ -1,13 +1,22 @@
 #!/usr/bin/python
 
+"""
+Description goes here..
+"""
+
 #################### Import modules #########################
-from modules.mysocket import mysocket
-from modules.message import message, secretSharing
-from modules import NO_VERIFICATION, MAC_VERIFICATION, AUX_INFO_VERIFICATION
 import sys
 import argparse
 from time import time
+from modules.mysocket import mysocket
+from modules.message import message, secretSharing
+from modules import NO_VERIFICATION, MAC_VERIFICATION, AUX_INFO_VERIFICATION
 
+#################### Module Metadata ########################
+__author__ = "Saurabh Gupta, Omkar Kaptan"
+__email__ = "saurabhgupta@asu.edu, okaptan@asu.edu"
+__license__ = "GPL"
+__version__ = "1.0"
 
 #############################################################
 #					Class: sender							#
@@ -192,10 +201,11 @@ class sender:
 		print "Share sent:", share
 
 	def sendShares(self, msg, n, k, prime, nodes, mode=NO_VERIFICATION):
-		"""Generates n shares for the msg such that any k shares can be used for
-		reconstruction of the msg. According to the specified mode, the verification 
-		information is added to each share and they are sent to the given list of nodes.
-		The value prime is used for as the order of modulo operations.
+		"""Generates n shares for the msg such that any k shares can be 
+		used for reconstruction of the msg. According to the specified mode, 
+		the verification information is added to each share and they are sent 
+		to the given list of nodes. The value prime is used for as the order 
+		of modulo operations.
 
 		Args:
 			msg: A string message for which the shares are to be sent.
@@ -211,10 +221,10 @@ class sender:
 			A list of string value shares sent to the given nodes.
 
 		Raises:
-			TypeError: Error when msg is not a string, or when either n, k, prime or mode 
-				is not an integer, or when nodes is not a list.
-			ValueError: Error when msg is longer than 150 characters, or when the mode
-				is invalid.
+			TypeError: Error when msg is not a string, or when either n, k, prime 
+				or mode is not an integer, or when nodes is not a list.
+			ValueError: Error when msg is longer than 150 characters, or when the 
+				mode is invalid.
 		"""
 
 		if type(msg) != str:

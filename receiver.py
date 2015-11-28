@@ -1,11 +1,21 @@
 #!/usr/bin/python
 
+"""
+Description goes here..
+"""
+
 #################### Import modules #########################
+from time import time
+import argparse
 from modules.mysocket import mysocket
 from modules.message import message, secretSharing
 from modules import NO_VERIFICATION, MAC_VERIFICATION, AUX_INFO_VERIFICATION
-from time import time
-import argparse
+
+#################### Module Metadata ########################
+__author__ = "Saurabh Gupta, Omkar Kaptan"
+__email__ = "saurabhgupta@asu.edu, okaptan@asu.edu"
+__license__ = "GPL"
+__version__ = "1.0"
 
 #############################################################
 #                    Class: receiver                        #

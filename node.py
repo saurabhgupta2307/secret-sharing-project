@@ -1,12 +1,21 @@
 #!/usr/bin/python
 
+"""
+Description goes here..
+"""
+
 #################### Import modules #########################
-from modules.mysocket import mysocket
-from modules import NO_VERIFICATION, MAC_VERIFICATION, AUX_INFO_VERIFICATION
-from modules.message import message
-import random
 import argparse
 from time import time
+from modules.mysocket import mysocket
+from modules import NO_VERIFICATION, MAC_VERIFICATION, AUX_INFO_VERIFICATION
+from modules.message import message, genRandNum
+
+#################### Module Metadata ########################
+__author__ = "Saurabh Gupta, Omkar Kaptan"
+__email__ = "saurabhgupta@asu.edu, okaptan@asu.edu"
+__license__ = "GPL"
+__version__ = "1.0"
 
 #############################################################
 #                    Class: node	                        #
@@ -92,12 +101,13 @@ class node:
 		converts it back to a string.
 
 		When mode is MAC_VERIFICATION, the share is of the form "['[x, y]', tag]".
-		The manipulation converts the share into a list, extracts the first element
-		'[x, y]', converts it into a list, replaces the y value with a random integer 
-		value, converts it back to a string, replaces the original '[x, y]' string 
-		with the new string in the list form share and converts it back to a string.
+		The manipulation converts the share into a list, extracts the first 
+		element '[x, y]', converts it into a list, replaces the y value with a 
+		random integer value, converts it back to a string, replaces the original 
+		'[x, y]' string with the new string in the list form share and converts 
+		it back to a string.
 
-		Invoked by faulty nodes only.
+		** Invoked by faulty nodes only. **
 
 		Args:
 			mode: An integer value representing the mode of verification as defined
@@ -116,13 +126,13 @@ class node:
 
 		share = message.strToList(self.share)
 		if mode == NO_VERIFICATION:
-			share[1] = random.randint(0, share[1])
+			share[1] = genRandNum(share[1])
 		elif mode == AUX_INFO_VERIFICATION:
-			share[0][1] = random.randint(0, share[0][1])
+			share[0][1] = genRandNum(share[0][1])
 		elif mode == MAC_VERIFICATION:
 			shareStr = share[0]
 			shareList = message.strToList(shareStr)
-			shareList[1] = random.randint(0, shareList[1])
+			shareList[1] = genRandNum(shareList[1])
 			shareStr = message.listToStr(shareList)
 			share[0] = shareStr
 
@@ -150,8 +160,9 @@ class node:
 		stored in the instance variable share.
 
 		Returns:
-			A boolean value corresponding to whether or not the instance variable
-				share is empty. True when share is a non-empty value, false otherwise.
+			A boolean value corresponding to whether or not the instance 
+				variable share is empty. True when share is a non-empty value, 
+				false otherwise.
 		"""
 
 		return self.share != None

@@ -1,12 +1,22 @@
 #!/usr/bin/python
 
+"""
+Description goes here..
+"""
+
 #################### Import modules #########################
-from modules import generatekey, generatePrimes, getLargePrime
-from modules.message import message
 import argparse
 import random
 import os
 from time import time
+from modules import generatekey, generatePrimes, getLargePrime
+from modules.message import message
+
+#################### Module Metadata ########################
+__author__ = "Saurabh Gupta, Omkar Kaptan"
+__email__ = "saurabhgupta@asu.edu, okaptan@asu.edu"
+__license__ = "GPL"
+__version__ = "1.0"
 
 ######### Global variables for command strings ##############
 cmdStr1 = "gnome-terminal -x sh"
@@ -112,10 +122,10 @@ def initNodes(n, t, nodePorts, verbose):
 	faultyNodes = []
 
 	for nodePort in nodePorts:
-		i = random.randint(0, n)
+		i = random.randint(0, 2)
 		nodePy2 = nodePy + portOption + str(nodePort)
 		
-		if i < t and len(faultyNodes) < t:
+		if i == 1 and len(faultyNodes) < t:
 			nodePy2 += faultyOption
 			faultyNodes.append(nodePort)
 		
