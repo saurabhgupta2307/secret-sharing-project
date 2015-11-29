@@ -6,8 +6,55 @@
 # Instructor: Dr. Rida Bazzi                                #
 #############################################################
 
-"""
-Description goes here..
+"""Code for demonstration purpose.
+
+The algorithm used is as follows:
+	1. Takes the number of intermediate nodes (n), the number 
+		of shares required for reconstruction (k) and the 
+		number of faulty nodes (t) as command line arguments.
+	2. Accepts secret message (maximum length 150 characters) 
+		and verification mode (1, 2 or 3) as console input.
+	3. Generates a prime number larger than the integer 
+		equivalent of the secret message as the order of 
+		modulo operations.
+	4. Generates a 256-bit cryptographically secure random 
+		key to be shared with sender and receiver nodes for 
+		MAC mode verification.
+	5. Generates lists of random port numbers to be used by
+		all the nodes for socket communication.
+	6. Writes the appropriate data values into 3 files, 
+		sender.txt, receiver.txt and nodes.txt, for the 
+		corresponding nodes to use during secret sharing 
+		operations.
+	7. Constructs unix command strings to initiate one bash
+		shell for each node for multi-threaded execution,
+		while randomly selecting, at most t, intermediate 
+		nodes as dishonest.
+
+Global Methods:
+~~~~~~~~~~~~~~~
+	getSecretMessage(limit)
+	getVerificationMode()
+	generateFile(data, fileName)
+	initNodes(n, t, nodePorts, verbose)
+	initClient(clientPy, verbose)
+
+Usage:
+~~~~~~
+Execute the following format command in a linux/unix shell.
+./main.py -n <nodes> -k <shares> [-t <faulty-nodes>] [-v] 
+	-n <nodes> is an integer value representing the number 
+		of intermediate nodes and number of shares to be 
+		generated.
+	-k <shares> is an integer value representing the number 
+		of shares requried for reconstruction in the 
+		(n, k) secret sharing scheme.
+	-t <faulty-nodes> is an integer value representing the 
+		maximum number of faulty nodes allowed. Default 
+		Value is 0.
+	-v is for verbose mode. If used, the intermediate node 
+		shell windows remain open after the execution is 
+		complete. Otherwise, they terminate.
 """
 
 #################### Import modules #########################
@@ -32,10 +79,8 @@ cmdStr4 = "\""
 nodePy = "node.py"
 senderPy = "sender.py"
 receiverPy = "receiver.py"
-
 portOption = " -p "
 faultyOption = " -f"
-verboseOption = " -v"
 
 #################### Method Definitions #####################
 
@@ -136,7 +181,6 @@ def initNodes(n, t, nodePorts, verbose):
 		
 		commandString = cmdStr1 + cmdStr2 + nodePy2 
 		if verbose == True:
-			commandString += verboseOption
 			commandString += cmdStr3 
 		
 		commandString += cmdStr4
@@ -160,8 +204,6 @@ def initClient(clientPy, verbose):
 	"""
 
 	commandString = cmdStr1 + cmdStr2 + clientPy 
-	if verbose == True:
-		commandString += verboseOption
 	commandString += cmdStr3 + cmdStr4
 	senderFile = os.popen(commandString)
 
@@ -181,9 +223,9 @@ if __name__ == "__main__":		#code to execute if called from command-line
 	args = parser.parse_args()
 
 	if args.nodes == None:
-		parser.error("Missing -n")
+		parser.error("Missing -n <nodes>")
 	elif args.klimit == None:
-		parser.error("Missing -k")
+		parser.error("Missing -k <klimit>")
 
 	n = args.nodes
 	k = args.klimit

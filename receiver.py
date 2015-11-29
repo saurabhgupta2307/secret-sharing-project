@@ -6,12 +6,70 @@
 # Instructor: Dr. Rida Bazzi                                #
 #############################################################
 
-"""
-Description goes here..
+"""Provides a receiver node class for receiving n shares from 
+intermediate nodes and reconstructs the secret message using 
+(n, k) secret sharing scheme. 
+
+In addition, the receiver uses the received verification information 
+based on the mode selected from the below options to verify the 
+integrity of each share.
+	1. No verification 
+	2. Information Theoretic Verification 
+	3. MAC Verification 
+
+If the verification fails for any share, the corresponding node 
+is declared faulty.
+
+The receiver reconstructs the secret using k valid shares and 
+calculates the list of faulty nodes for final output.
+
+Class receiver
+~~~~~~~~~~~~~~
+    Attributes: 
+        host - the host name
+        ports - list of port numbers
+		sock - list of socket objects
+		key - shared key for MAC mode verification
+    Constructor: 
+        __init__(self, ports, key)
+    Methods:		
+		reconstructSecret(self, nodes, buffer, k, t, prime, mode)
+		getShares(self, nodes, buffer)
+		getShareFromNode(self, node, buffer, index)
+		getReconSharesNoVrfy(self, sList, k)
+		unpackSharesAuxMode(self, shares)
+		verifyAuxInfo(self, sList, yList, bList, cList, t, prime)
+		getReconSharesAuxMode(self, sList, honestNodes, k)
+		unpackSharesMacMode(self, shares)
+		verifyMac(self, sList, macList)
+		getReconSharesMacMode(self, sList, honestNodes, k)
+		getFaultyNodes(self, nodes, honestNodes)
+
+Boilerplate
+~~~~~~~~~~~
+***Code for demonstration purpose.***
+The algorithm used is as follows:
+	1. Read receiver.txt file to retreive the number of shares 
+		requried for reconstruction (k), the maximum number of 
+		faulty nodes (t), the prime number to be used for modulo 
+		operations, the mode of verification, the shared key to 
+		be used for MAC mode verification, the port numbers to be 
+		used for initiating receiver node sockets for communication 
+		with the intermediate nodes and the list of intermediate nodes.
+	2. Initiate receiver object with the port numbers list and the
+		shared key. The object is constructed with the corresponding 
+		sockets initiated and bound.
+	3. Connect to the intermediate nodes and receive shares from 
+		each node.
+	4. If verification mode is MAC or Information Theoretic, verify
+		each share using the verification information in the shares.
+		Return a list of invalid shares.
+	5. Reconstruct the secret message using valid shares, and return 
+		the secret and the list of faulty nodes using the list of 
+		invalid shares. 
 """
 
 #################### Import modules #########################
-import argparse
 from time import time
 from modules.mysocket import mysocket
 from modules.util import message 
@@ -35,9 +93,10 @@ class receiver:
 
 	Attributes:
 		host: A string value for the host name.
-		port: An integer value for the port number.
+		ports: A list of integer values for the port numbers.
 		sock: A list of socket objects.
-		key: A base64 format string key to be used for MAC tag verification.
+		key: A base64 format string key to be used for MAC tag 
+			verification.
 	"""
 
 	def __init__(self, ports, key=None):
@@ -223,7 +282,7 @@ class receiver:
 
 		acceptMac = []
 		for i in range(0, len(sList)):
-			result = message.verifyMac(sList[i], self.key, macList[i])
+			result = secretSharing.verifyMac(sList[i], self.key, macList[i])
 			acceptMac.append(result)
 
 		return acceptMac
@@ -288,7 +347,7 @@ class receiver:
 					z = j
 				else:
 					z = j+1
-				resultMatrix[i][z] = message.verifyAuxInfo(si, yij, bij, cij, prime)
+				resultMatrix[i][z] = secretSharing.verifyAuxInfo(si, yij, bij, cij, prime)
 
 			if t > 0 and resultMatrix[i].count(False) >= t:
 				acceptAuxInfo[i] = False
@@ -538,11 +597,6 @@ class receiver:
 #############################################################
 
 if __name__ == "__main__":		#code to execute if called from command-line
-	parser = argparse.ArgumentParser()
-	parser.add_argument("-v", "--verbose", dest="verbose", action='store_true')
-	parser.set_defaults(verbose=False)
-	args = parser.parse_args()
-
 	fp = open("receiver.txt", "r")
 	dictStr = fp.read()
 	fp.close()

@@ -6,13 +6,59 @@
 # Instructor: Dr. Rida Bazzi                                #
 #############################################################
 
-"""
-Description goes here..
+"""Provides a sender node class for generating n secrets using 
+(n, k) secret sharing scheme and sending them to n intermediate 
+nodes. 
+
+In addition, the sender generates verification information based
+of the mode selected from the below options.
+	1. No verification 
+	2. Information Theoretic Verification 
+	3. MAC Verification 
+
+The verification information and the share are packaged together
+and send to an intermediate node as a single string message. 
+
+Class sender
+~~~~~~~~~~~~
+    Attributes: 
+        host - the host name
+        ports - list of port numbers
+		sock - list of socket objects
+		key - shared key for MAC mode verification
+    Constructor: 
+        __init__(self, ports, key)
+    Methods:		
+		sendShares(self, msg, n, k, prime, nodes, mode)
+		sendShareToNode(self, share, node, index)
+		getSharesNoVrfy(self, shares)
+		getSharesWithMac(self, shares)
+		getSharesWithAuxInfo(self, shares, prime)
+
+Boilerplate
+~~~~~~~~~~~
+***Code for demonstration purpose.***
+The algorithm used is as follows:
+	1. Read sender.txt file to retreive the secret message 
+		to be shared, the number of shares to be generated (n),
+		the number of shares requried for reconstruction (k), 
+		the prime number to be used for modulo operations, 
+		the mode of verification, the shared key to be used 
+		for MAC mode verification and the port numbers to be 
+		used for initiating sender node sockets for communication
+		with the intermediate nodes.
+	2. Initiate sender object with the port numbers list and the
+		shared key. The object is constructed with the corresponding 
+		sockets initiated and bound.
+	3. Generate n shares for the secret message along with the 
+		verification information corresponding to the mode selected.
+	4. Send one share each to the intermediate nodes. Each share 
+		contains the share of the message along with the verification 
+		information pertaining to the share.
 """
 
 #################### Import modules #########################
 import sys
-import argparse
 from time import time
 from modules.mysocket import mysocket
 from modules.util import message 
@@ -35,7 +81,7 @@ class sender:
 
 	Attributes:
 		host: A string value for the host name.
-		port: An integer value for the port number.
+		ports: A list of integer values for the port numbers.
 		sock: A list of socket objects.
 		key: A base64 format string key to be used for MAC tag generation.
 	"""
@@ -118,7 +164,7 @@ class sender:
 		sharesToSend = []
 		for share in shares:
 			shareStr = message.listToStr(share)
-			mac = message.generateMac(shareStr, self.key)
+			mac = secretSharing.generateMac(shareStr, self.key)
 			msg = message.listToStr([shareStr, mac])
 			sharesToSend.append(msg)
 
@@ -164,7 +210,7 @@ class sender:
 			for j in range(0, len(shares)):
 				if i == j:
 					continue
-				c, b, y = message.generateAuxInfo(shares[i][1], prime)
+				c, b, y = secretSharing.generateAuxInfo(shares[i][1], prime)
 				yList.append([i+1, j+1, y])
 				bList.append([j+1, i+1, b])
 				cList.append([j+1, i+1, c])
@@ -286,11 +332,6 @@ class sender:
 #############################################################
 
 if __name__ == "__main__":		#code to execute if called from command-line
-	parser = argparse.ArgumentParser()
-	parser.add_argument("-v", "--verbose", dest="verbose", action='store_true')
-	parser.set_defaults(verbose=False)
-	args = parser.parse_args()
-
 	fp = open("sender.txt", "r")
 	dictStr = fp.read()
 	fp.close()

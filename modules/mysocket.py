@@ -12,18 +12,18 @@ arbitrary length messages.
 Class mysocket
 ~~~~~~~~~~~~~~
     Attributes: 
-        sock
+        sock - A socket object
     Constructor: 
-        __init__(self, sock=None)
+        __init__(self, sock)
     Methods:
         bind(self, (host, port))
-        connect(self, (host, port))
         getportnumber(self)
-        accept(self)
-        close(self)
+        connect(self, (host, port))
         listen(self, backlog)
+        accept(self)
         send(self, msg, separator)
         recv(self, buffer, separator)
+        close(self)
     Static Methods: 
         gethostname()
 """

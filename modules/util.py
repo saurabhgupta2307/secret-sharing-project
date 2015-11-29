@@ -6,32 +6,29 @@
 # Instructor: Dr. Rida Bazzi                                #
 #############################################################
 
-"""Provides a socket wrapper module for communication involving
-arbitrary length messages.
+"""Provides a utility module for useful methods.
 
-Class mysocket
+Global Methods
 ~~~~~~~~~~~~~~
-    Attributes: 
-        sock
-    Constructor: 
-        __init__(self, sock=None)
-    Methods:
-        bind(self, (host, port))
-        connect(self, (host, port))
-        getportnumber(self)
-        accept(self)
-        close(self)
-        listen(self, backlog)
-        send(self, msg, separator)
-        recv(self, buffer, separator)
+    generatekey(length)
+    genRandNum(maximum)
+    generatePrimes()
+    getLargePrime(num)
+
+Class message
+~~~~~~~~~~~~~~
     Static Methods: 
-        gethostname()
+        strToNum(msgString)
+        numToStr(msgNum)
+        listToStr(msgList)
+        strToList(msg)
+        strToBase64(msg)
+        base64ToStr(b64Msg)
+        numToBase64(msgNum)
 """
 
 #################### Import modules #########################
 import binascii
-import hmac
-import hashlib
 import base64
 import ast
 import os
@@ -196,25 +193,6 @@ class message:
             raise TypeError("invalid message: int or long expected")
 
         return binascii.unhexlify('%x' % msgNum)
-
-    @staticmethod
-    def listToStr(msgList):
-        """Converts a list form message to corresponding string value.
-
-        Args:
-            msgList: A list message to be converted.
-
-        Returns:
-            A string corresponding to the given list msgList.
-
-        Raises:
-            TypeError: Error when msgList is not a list.
-        """
-
-        if type(msgList) != list:
-            raise TypeError("invalid message: list expected")
-
-        return str(msgList)
         
     @staticmethod
     def strToBase64(msg):
@@ -321,127 +299,5 @@ class message:
             raise TypeError("invalid msgList: list expected")
         
         return str(msgList)
-
-    @staticmethod
-    def generateMac(msg, key):
-        """Generates a base64 SHA256 based HMAC tag for the given msg using the 
-        given key. 
-
-        Args:
-            msg: A string message for which the MAC tag is to be generated.
-            key: A string key to be used for generating the MAC tag.
-
-        Returns:
-            A base64 format string representing the MAC tag for the msg.
-
-        Raises:
-            TypeError: Error when either the msg or key is not a string.
-        """
-
-        if type(msg) != str:
-            raise TypeError("invalid msg: string expected")
-        elif type(key) != str:
-            raise TypeError("invalid key: string expected")
-
-        keyString = message.base64ToStr(key)    
-        dig = hmac.new(keyString, msg, hashlib.sha256).digest()
-        tag = base64.b64encode(dig)
-        return tag
-
-    @staticmethod
-    def verifyMac(msg, key, tag):
-        """Canonically verifies the given MAC tag for the given msg using the 
-        given key. 
-
-        Args:
-            msg: A string message for which the MAC tag is to be verified.
-            key: A string key to be used for verifying the MAC tag.
-            tag: A string tag to be verified.
-
-        Returns:
-            A boolean corresponding to the verification. True if tag is a valid 
-            MAC tag for the msg using the key, and False otherwise.
-
-        Raises:
-            TypeError: Error when either the msg, key or tag is not a string.
-        """
-
-        if type(msg) != str:
-            raise TypeError("invalid msg: str expected")
-        elif type(key) != str:
-            raise TypeError("invalid msg: str expected")
-        elif type(tag) != str:
-            raise TypeError("invalid msg: str expected")
-
-        return message.generateMac(msg, key) == tag
-
-    @staticmethod
-    def generateAuxInfo(s, prime):
-        """Generates auxilliary information for a msg integer s to satisfy the 
-        quation c = bs + y where b and y are randomly generated numbers. Each 
-        of c, b and y are values module prime. 
-
-        Args:
-            s: A integer message for which the auxilliary information is to be 
-                generated.
-            prime: A integer value specifying the prime field for modulo operations.
-
-        Returns:
-            A list consisting of values [c, b, y] that satisfies the equation 
-                c = bs + y.
-
-        Raises:
-            TypeError: Error when either the s or prime is not a integer.
-            ValueError: Error when prime is not greater than the given value of s.
-        """
-
-        if type(s) not in [int, long]:
-            raise TypeError("invalid msg: int or long expected")
-        elif type(prime) not in [int, long]:
-            raise TypeError("invalid prime: int or long expected")
-        elif s >= prime:
-            raise ValueError("invalid prime: value larger than s expected")
-
-        b = genRandNum(prime)
-        y = genRandNum(prime)
-        c = (b * s + y) % prime
-        return [c, b, y]
-
-    @staticmethod
-    def verifyAuxInfo(s, y, b, c, prime):
-        """Verifies the given values of s, y, b and c for the equation c = bs + y 
-        using prime as the order of modulo operations. 
-
-        Args:
-            s: An integer value.
-            y: An integer value.
-            b: An integer value.
-            c: An integer value.
-            prime: An integer value to be used as the order of modulo operations.
-
-        Returns:
-            A boolean corresponding to the verification. True if the given values 
-            satisfy the equation c = bs + y using prime modulo operation, and 
-            False otherwise.
-
-        Raises:
-            TypeError: Error when either of the arguments is not an integer.
-            ValueError: Error when prime is not greater than each of s, y, b and c.
-        """
-
-        if type(c) not in [int, long]:
-            raise TypeError("invalid c: int or long expected")
-        elif type(s) not in [int, long]:
-            raise TypeError("invalid s: int or long expected")
-        elif type(b) not in [int, long]:
-            raise TypeError("invalid b: int or long expected")
-        elif type(y) not in [int, long]:
-            raise TypeError("invalid y: int or long expected")
-        elif type(prime) not in [int, long]:
-            raise TypeError("invalid prime: int or long expected")
-        elif prime <= max(s, y, b, c):
-            raise ValueError("invalid prime: value larger than s, y, b, c expected")
-        return c == (s * b + y) % prime
-
 
 ##################### End of Code ###########################

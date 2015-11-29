@@ -6,8 +6,58 @@
 # Instructor: Dr. Rida Bazzi                                #
 #############################################################
 
-"""
-Description goes here..
+"""Provides an intermediate node class for receiving a share from 
+the sender node and sending it to the receiver node upon request. 
+
+In case the intermediate node is selected as faulty, it manipulates 
+the share by substituting the share value with another value before 
+sending it to the receiver node.
+
+Class node
+~~~~~~~~~~
+    Attributes: 
+        host - the host name
+		port - the port number
+		sock - a socket object
+		share - the share received from the sender
+    Constructor: 
+        __init__(self, port)
+    Methods:
+		getNode(self)
+		receiveShare(self, client, buf)
+		manipulateShare(self, mode)
+		sendShare(self, client)
+		isShareReceived(self)
+		run(self, senderPorts, receiverPorts, buf, mode, honest)
+
+Boilerplate
+~~~~~~~~~~~
+***Code for demonstration purpose.***
+The algorithm used is as follows:
+	1. Take the port number and a boolean indicating whether or 
+		not the node is faulty as command-line arguments.
+	2. Read nodes.txt file to retreive the mode of verification, 
+		and the port numbers used by sender and receiver nodes.
+	3. Initiate node object with the port number. The object is 
+		constructed with a socket initiated and bound.
+	4. Open the socket for listening to the incoming connection 
+		requests, and accept connections only from sender and 
+		receiver nodes. If receiver node connects before the share 
+		has been received, wait for the share to be received.
+	5. Receive share from the sender.
+	6. If the node is faulty, manipulate the share by substituting
+		the share value with a new value.
+	7. Send the share to the receiver node. 
+
+Usage:
+~~~~~~
+Execute the following format command in a linux/unix shell.
+./node.py -p <port> [-f]
+	-p <port> is an integer value representing the port number 
+		of intermediate node socket.
+	-f is a boolean switch representing whether or not the  
+		node is faulty. If used, the node is executed as a 
+		faulty node.
 """
 
 #################### Import modules #########################
@@ -262,13 +312,11 @@ if __name__ == "__main__":		#code to execute if called from command-line
 	parser = argparse.ArgumentParser()
 	parser.add_argument("-p", "--port", type=int)
 	parser.add_argument("-f", dest="faulty", action='store_true')
-	parser.add_argument("-v", "--verbose", dest="verbose", action='store_true')
-	parser.set_defaults(verbose=False)
 	parser.set_defaults(faulty=False)
 	args = parser.parse_args()
 
 	if args.port == None:
-		raise RuntimeError("No port specified")
+		parser.error("Missing -p <port>")
 
 	fp = open("nodes.txt", "r")
 	dictStr = fp.read()
