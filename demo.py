@@ -42,7 +42,7 @@ Global Methods:
 Usage:
 ~~~~~~
 Execute the following format command in a linux/unix shell.
-./demo.py -n <nodes> -k <shares> [-t <faulty>] [-v] 
+./demo.py -n <nodes> -k <shares> [-t <faulty>] [-v]
 	-n <nodes> is an integer value representing the number 
 		of intermediate nodes and number of shares to be 
 		generated.
