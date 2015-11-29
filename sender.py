@@ -1,5 +1,11 @@
 #!/usr/bin/python
 
+#############################################################
+# CSE 539 (Applied Cryptography) Fall 2015 - Project        #
+# Team: Saurabh Gupta, Omkar Kaptan                         #
+# Instructor: Dr. Rida Bazzi                                #
+#############################################################
+
 """
 Description goes here..
 """
@@ -9,8 +15,11 @@ import sys
 import argparse
 from time import time
 from modules.mysocket import mysocket
-from modules.message import message, secretSharing
-from modules.message import NO_VERIFICATION, MAC_VERIFICATION, AUX_INFO_VERIFICATION
+from modules.util import message 
+from modules.secretSharing import secretSharing
+from modules.secretSharing import NO_VERIFICATION
+from modules.secretSharing import MAC_VERIFICATION
+from modules.secretSharing import AUX_INFO_VERIFICATION
 
 #################### Module Metadata ########################
 __author__ = "Saurabh Gupta, Omkar Kaptan"
@@ -276,7 +285,7 @@ class sender:
 #					Boilerplate Code						#
 #############################################################
 
-if __name__ == "__main__":
+if __name__ == "__main__":		#code to execute if called from command-line
 	parser = argparse.ArgumentParser()
 	parser.add_argument("-v", "--verbose", dest="verbose", action='store_true')
 	parser.set_defaults(verbose=False)

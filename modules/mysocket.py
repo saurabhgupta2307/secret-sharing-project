@@ -1,7 +1,31 @@
 #!/usr/bin/python
 
-"""
-Description goes here..
+#############################################################
+# CSE 539 (Applied Cryptography) Fall 2015 - Project        #
+# Team: Saurabh Gupta, Omkar Kaptan                         #
+# Instructor: Dr. Rida Bazzi                                #
+#############################################################
+
+"""Provides a socket wrapper module for communication involving
+arbitrary length messages.
+
+Class mysocket
+~~~~~~~~~~~~~~
+    Attributes: 
+        sock
+    Constructor: 
+        __init__(self, sock=None)
+    Methods:
+        bind(self, (host, port))
+        connect(self, (host, port))
+        getportnumber(self)
+        accept(self)
+        close(self)
+        listen(self, backlog)
+        send(self, msg, separator)
+        recv(self, buffer, separator)
+    Static Methods: 
+        gethostname()
 """
 
 #################### Import modules #########################

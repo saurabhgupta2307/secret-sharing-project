@@ -1,5 +1,11 @@
 #!/usr/bin/python
 
+#############################################################
+# CSE 539 (Applied Cryptography) Fall 2015 - Project        #
+# Team: Saurabh Gupta, Omkar Kaptan                         #
+# Instructor: Dr. Rida Bazzi                                #
+#############################################################
+
 """
 Description goes here..
 """
@@ -9,7 +15,7 @@ import argparse
 import random
 import os
 from time import time
-from modules.message import message, generatekey, getLargePrime
+from modules.util import generatekey, getLargePrime, message
 
 #################### Module Metadata ########################
 __author__ = "Saurabh Gupta, Omkar Kaptan"
@@ -164,7 +170,7 @@ def initClient(clientPy, verbose):
 #					Boilerplate Code						#
 #############################################################
 
-if __name__ == "__main__":
+if __name__ == "__main__":		#code to execute if called from command-line
 	parser = argparse.ArgumentParser(description="Initiate secret sharing demo")
 	parser.add_argument("-n", "--nodes", type=int)
 	parser.add_argument("-k", "--klimit", type=int)
