@@ -2,14 +2,15 @@
 Verifiable Secret Sharing Project
 
 Team: Saurabh Gupta, Omkar Kaptan
-CSE 539 Applied Cryptography
-Fall 2015
+
+CSE 539 Applied Cryptography - Fall 2015
+
 Arizona State University
 
 Usage:
 ~~~~~~
 Execute the following format command in a linux/unix shell.
-./main.py -n <nodes> -k <shares> [-t <faulty>] [-v] 
+./demo.py -n <nodes> -k <shares> [-t <faulty>] [-v] 
 	-n <nodes> is an integer value representing the number 
 		of intermediate nodes and number of shares to be 
 		generated.
