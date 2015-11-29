@@ -99,16 +99,17 @@ def genRandNum(maximum=2):
 
 def generatePrimes():
     """Generates set of prime numbers using Mersenne Primes and 
-    known large primes.
+    known large primes (https://primes.utm.edu/lists/2small/).
 
     Returns:
         A list of generated prime numbers.
     """
 
-    prime257Bit = 2**256 + 297
-    prime321Bit = 2**320 + 27
-    prime385Bit = 2**384 + 231
-    primes = [prime257Bit, prime321Bit, prime385Bit]
+    prime192Bit = 2**192 - 237
+    prime256Bit = 2**256 - 189
+    prime320Bit = 2**320 - 197
+    prime384Bit = 2**384 - 317
+    primes = [prime192Bit, prime256Bit, prime320Bit, prime384Bit]
     mersennePrimeExponents = [
         13, 17, 19, 31, 61, 89, 107, 127, 521, 607, 1279]
 
