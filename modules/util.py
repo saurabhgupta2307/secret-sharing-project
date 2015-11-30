@@ -110,8 +110,7 @@ def generatePrimes():
     prime320Bit = 2**320 - 197
     prime384Bit = 2**384 - 317
     primes = [prime192Bit, prime256Bit, prime320Bit, prime384Bit]
-    mersennePrimeExponents = [
-        13, 17, 19, 31, 61, 89, 107, 127, 521, 607, 1279]
+    mersennePrimeExponents = [127, 521, 607, 1279]
 
     for exp in mersennePrimeExponents:
         primes.append(2 ** exp - 1)
