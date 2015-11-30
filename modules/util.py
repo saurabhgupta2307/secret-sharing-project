@@ -105,13 +105,13 @@ def generatePrimes():
         A list of generated prime numbers.
     """
 
+    mersennePrimeExponents = [127, 521, 607, 1279]
     prime192Bit = 2**192 - 237
     prime256Bit = 2**256 - 189
     prime320Bit = 2**320 - 197
     prime384Bit = 2**384 - 317
+    
     primes = [prime192Bit, prime256Bit, prime320Bit, prime384Bit]
-    mersennePrimeExponents = [127, 521, 607, 1279]
-
     for exp in mersennePrimeExponents:
         primes.append(2 ** exp - 1)
     
