@@ -301,6 +301,7 @@ class sender:
 			raise ValueError("invalid mode: " + modeRange + " expected")
 
 		print "Secret message:", msg
+		genStartTime = time()
 		shares = secretSharing.generateShares(msg, n, k, prime)
 		sharesToSend = []
 
@@ -311,6 +312,7 @@ class sender:
 		elif mode == AUX_INFO_VERIFICATION:
 			sharesToSend = self.getSharesWithAuxInfo(shares, prime)
 
+		genEndTime = time()
 		for i in range(0, len(nodes)):
 			self.sendShareToNode(sharesToSend[i], nodes[i], i)
 
@@ -324,7 +326,7 @@ class sender:
 		print "Share Size: %d bytes" % shareSize
 		print "Total Shares Size: %d bytes" % totalSharesSize
 		print "-" * 50
-		return sharesToSend
+		return [sharesToSend, genEndTime-genStartTime]
 
 
 #############################################################
@@ -346,17 +348,13 @@ if __name__ == "__main__":		#code to execute if called from command-line
 		key = senderDict['key']
 		mode = senderDict['mode']
 		nodePorts = senderDict['nodes']
-		initStartTime = senderDict['startTime']
 		addr = mysocket.gethostname()
 		nodes = [(addr, portNum) for portNum in nodePorts]
 
-		startTime = time()
 		s = sender(ports, key)
-		shares = s.sendShares(msg, n, k, prime, nodes, mode)
-		endTime = time()
+		shares, genTime = s.sendShares(msg, n, k, prime, nodes, mode)
 
-		print "Time elapsed since initialization:", endTime - initStartTime
-		print "Time taken to send shares:", endTime - startTime
+		print "Time taken to generate shares:", genTime
 		print "-" * 50
 	except:
 		print "An error has occured. Please try again later."

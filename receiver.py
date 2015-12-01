@@ -566,6 +566,7 @@ class receiver:
 			raise ValueError("invalid mode: " + modeRange + " expected")
 
 		shares = self.getShares(nodes, buffer)
+		reconStartTime = time()
 		sharesForRecon = []
 		honestNodes = []
 
@@ -588,8 +589,9 @@ class receiver:
 		except TypeError:
 			secret = None
 		faultyNodes = self.getFaultyNodes(nodes, honestNodes)
+		reconEndTime = time()
 
-		return [secret, faultyNodes]
+		return [secret, faultyNodes, reconEndTime-reconStartTime]
 
 
 #############################################################
@@ -611,13 +613,11 @@ if __name__ == "__main__":		#code to execute if called from command-line
 		mode = recvrDict['mode']
 		buf = recvrDict['buffer']
 		nodePorts = recvrDict['nodes']
-		initStartTime = recvrDict['startTime']
 		addr = mysocket.gethostname()
 		nodes = [(addr, portNum) for portNum in nodePorts]
 
-		startTime = time()
 		r = receiver(ports, key)
-		secret, faultyNodes = r.reconstructSecret(nodes, buf, k, t, prime, mode)
+		secret, faultyNodes, reconTime = r.reconstructSecret(nodes, buf, k, t, prime, mode)
 		if len(faultyNodes) == 0:
 			faultyNodes = None
 
@@ -626,8 +626,7 @@ if __name__ == "__main__":		#code to execute if called from command-line
 		print "Reconstructed message:", secret
 		print "Faulty nodes:", faultyNodes
 		print "-" * 50
-		print "Time elapsed since initialization:", endTime - initStartTime
-		print "Time taken to reconstruct secret :", endTime - startTime
+		print "Time taken to reconstruct secret :", reconTime
 		print "-" * 50
 	except:
 		print "An error has occured. Please try again later."

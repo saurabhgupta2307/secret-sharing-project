@@ -61,7 +61,6 @@ Execute the following format command in a linux/unix shell.
 import argparse
 import random
 import os
-from time import time
 from modules.util import generatekey, getLargePrime, message
 
 #################### Module Metadata ########################
@@ -241,8 +240,6 @@ if __name__ == "__main__":		#code to execute if called from command-line
 	mode = getVerificationMode()
 	print "-" * 50
 
-	startTime = time()
-
 	secretNum = message.strToNum(secret)
 	prime = getLargePrime(secretNum)
 	key = generatekey(256)
@@ -255,14 +252,14 @@ if __name__ == "__main__":		#code to execute if called from command-line
 
 	senderDict = {'msg': secret, 'n': n, 'k': k, 'mode': mode,
 				  'prime': prime, 'key': key, 'ports': senderPorts,
-				  'nodes': nodePorts, 'startTime': startTime}
+				  'nodes': nodePorts}
 
 	recvrDict = {'k': k, 'mode': mode, 't': t, 'buffer': buf,
 				  'prime': prime, 'key': key, 'ports': receiverPorts,
-				  'nodes': nodePorts, 'startTime': startTime}
+				  'nodes': nodePorts}
 
 	nodeDict = {'mode': mode, 'buffer': buf, 'sender': senderPorts,
-				  'receiver': receiverPorts, 'startTime': startTime}
+				  'receiver': receiverPorts}
 
 	generateFile(senderDict, "sender.txt")
 	generateFile(recvrDict, "receiver.txt")
@@ -272,11 +269,8 @@ if __name__ == "__main__":		#code to execute if called from command-line
 	initClient(senderPy, args.verbose)
 	initClient(receiverPy, args.verbose)
 
-	endTime = time()
-
 	print "n = %d, k = %d, t = %d" % (n, k, t)
 	print "Faulty Nodes:", faultyNodes
-	print "Time taken to initiate nodes:", endTime - startTime
 	print "-" * 50
 
 ##################### End of Code ###########################
