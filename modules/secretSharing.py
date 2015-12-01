@@ -344,7 +344,7 @@ class secretSharing:
         elif type(tag) != str:
             raise TypeError("invalid msg: str expected")
 
-        return secretSharing.generateMac(msg, key) == tag
+        return hmac.compare_digest(secretSharing.generateMac(msg, key), tag)
 
     @staticmethod
     def generateAuxInfo(s, prime):

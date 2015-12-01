@@ -233,7 +233,7 @@ if __name__ == "__main__":		#code to execute if called from command-line
 	if args.tolerance == None:
 		t = 0
 	else: 
-		t = min(args.tolerance, k-1, n-k-1)
+		t = min(args.tolerance, k-1, n-k)
 
 	print "-" * 50
 	secret = getSecretMessage(150)
@@ -248,7 +248,7 @@ if __name__ == "__main__":		#code to execute if called from command-line
 	key = generatekey(256)
 	buf = 1024
 
-	minPort = random.randint(12345, 23456)
+	minPort = random.randint(10000, 30000)
 	senderPorts = range(minPort, minPort + n)
 	receiverPorts = range(minPort + n, minPort + 2*n)
 	nodePorts = range(minPort + 2*n, minPort + 3*n)
