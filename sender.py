@@ -278,14 +278,14 @@ class sender:
 		Raises:
 			TypeError: Error when msg is not a string, or when either n, k, prime 
 				or mode is not an integer, or when nodes is not a list.
-			ValueError: Error when msg is longer than 150 characters, or when the 
+			ValueError: Error when msg is longer than 159 characters, or when the 
 				mode is invalid.
 		"""
 
 		if type(msg) != str:
 			raise TypeError("invalid msg: str expected")
-		elif len(msg) > 150:
-			raise ValueError("invalid msg: expected 150 characters or less")
+		elif len(msg) > 159:
+			raise ValueError("invalid msg: expected 159 characters or less")
 		elif type(n) not in [int, long]:
 			raise TypeError("invalid n: int or long expected")
 		elif type(k) not in [int, long]:

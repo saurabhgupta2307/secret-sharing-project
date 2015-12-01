@@ -12,7 +12,7 @@ The algorithm used is as follows:
 	1. Takes the number of intermediate nodes (n), the number 
 		of shares required for reconstruction (k) and the 
 		number of faulty nodes (t) as command line arguments.
-	2. Accepts secret message (maximum length 150 characters) 
+	2. Accepts secret message (maximum length 159 characters) 
 		and verification mode (1, 2 or 3) as console input.
 	3. Generates a prime number larger than the integer 
 		equivalent of the secret message as the order of 
@@ -235,7 +235,7 @@ if __name__ == "__main__":		#code to execute if called from command-line
 		t = min(args.tolerance, k-1, n-k)
 
 	print "-" * 50
-	secret = getSecretMessage(150)
+	secret = getSecretMessage(159)
 	print "-" * 50
 	mode = getVerificationMode()
 	print "-" * 50
