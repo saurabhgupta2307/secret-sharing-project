@@ -597,36 +597,39 @@ class receiver:
 #############################################################
 
 if __name__ == "__main__":		#code to execute if called from command-line
-	fp = open("receiver.txt", "r")
-	dictStr = fp.read()
-	fp.close()
+	try:
+		fp = open("receiver.txt", "r")
+		dictStr = fp.read()
+		fp.close()
 
-	recvrDict = message.strToList(dictStr)
-	ports = recvrDict['ports']
-	t = recvrDict['t']
-	k = recvrDict['k']
-	prime = recvrDict['prime']
-	key = recvrDict['key']
-	mode = recvrDict['mode']
-	buf = recvrDict['buffer']
-	nodePorts = recvrDict['nodes']
-	initStartTime = recvrDict['startTime']
-	addr = mysocket.gethostname()
-	nodes = [(addr, portNum) for portNum in nodePorts]
+		recvrDict = message.strToList(dictStr)
+		ports = recvrDict['ports']
+		t = recvrDict['t']
+		k = recvrDict['k']
+		prime = recvrDict['prime']
+		key = recvrDict['key']
+		mode = recvrDict['mode']
+		buf = recvrDict['buffer']
+		nodePorts = recvrDict['nodes']
+		initStartTime = recvrDict['startTime']
+		addr = mysocket.gethostname()
+		nodes = [(addr, portNum) for portNum in nodePorts]
 
-	startTime = time()
-	r = receiver(ports, key)
-	secret, faultyNodes = r.reconstructSecret(nodes, buf, k, t, prime, mode)
-	if len(faultyNodes) == 0:
-		faultyNodes = None
+		startTime = time()
+		r = receiver(ports, key)
+		secret, faultyNodes = r.reconstructSecret(nodes, buf, k, t, prime, mode)
+		if len(faultyNodes) == 0:
+			faultyNodes = None
 
-	endTime = time()
-	print "-" * 50
-	print "Reconstructed message:", secret
-	print "Faulty nodes:", faultyNodes
-	print "-" * 50
-	print "Time elapsed since initialization:", endTime - initStartTime
-	print "Time taken to reconstruct secret :", endTime - startTime
-	print "-" * 50
+		endTime = time()
+		print "-" * 50
+		print "Reconstructed message:", secret
+		print "Faulty nodes:", faultyNodes
+		print "-" * 50
+		print "Time elapsed since initialization:", endTime - initStartTime
+		print "Time taken to reconstruct secret :", endTime - startTime
+		print "-" * 50
+	except:
+		print "An error has occured. Please try again later."
 
 ##################### End of Code ###########################

@@ -318,33 +318,36 @@ if __name__ == "__main__":		#code to execute if called from command-line
 	if args.port == None:
 		parser.error("Missing -p <port>")
 
-	fp = open("nodes.txt", "r")
-	dictStr = fp.read()
-	fp.close()
+	try:
+		fp = open("nodes.txt", "r")
+		dictStr = fp.read()
+		fp.close()
 
-	nodeDict = message.strToList(dictStr)
-	mode = nodeDict['mode']
-	buf = nodeDict['buffer']
-	senderPorts = nodeDict['sender']
-	receiverPorts = nodeDict['receiver']
-	initStartTime = nodeDict['startTime']
-	port = args.port
+		nodeDict = message.strToList(dictStr)
+		mode = nodeDict['mode']
+		buf = nodeDict['buffer']
+		senderPorts = nodeDict['sender']
+		receiverPorts = nodeDict['receiver']
+		initStartTime = nodeDict['startTime']
+		port = args.port
 
-	if args.faulty != None:
-		honest = not args.faulty
-	else:
-		honest = True
+		if args.faulty != None:
+			honest = not args.faulty
+		else:
+			honest = True
 
-	if honest == False:
-		print "**** Faulty Node ****"
+		if honest == False:
+			print "**** Faulty Node ****"
 
-	startTime = time()
-	currNode = node(port)
-	currNode.run(senderPorts, receiverPorts, buf, mode, honest)
-	endTime = time()
+		startTime = time()
+		currNode = node(port)
+		currNode.run(senderPorts, receiverPorts, buf, mode, honest)
+		endTime = time()
 
-	print "Time elapsed since initialization:", endTime - initStartTime
-	print "Time of operation:", endTime - startTime
-	print "-" * 50
+		print "Time elapsed since initialization:", endTime - initStartTime
+		print "Time of operation:", endTime - startTime
+		print "-" * 50
+	except:
+		print "An error has occured. Please try again later."
 
 ##################### End of Code ###########################

@@ -332,30 +332,33 @@ class sender:
 #############################################################
 
 if __name__ == "__main__":		#code to execute if called from command-line
-	fp = open("sender.txt", "r")
-	dictStr = fp.read()
-	fp.close()
+	try:
+		fp = open("sender.txt", "r")
+		dictStr = fp.read()
+		fp.close()
 
-	senderDict = message.strToList(dictStr)
-	ports = senderDict['ports']
-	msg = senderDict['msg']
-	n = senderDict['n']
-	k = senderDict['k']
-	prime = senderDict['prime']
-	key = senderDict['key']
-	mode = senderDict['mode']
-	nodePorts = senderDict['nodes']
-	initStartTime = senderDict['startTime']
-	addr = mysocket.gethostname()
-	nodes = [(addr, portNum) for portNum in nodePorts]
+		senderDict = message.strToList(dictStr)
+		ports = senderDict['ports']
+		msg = senderDict['msg']
+		n = senderDict['n']
+		k = senderDict['k']
+		prime = senderDict['prime']
+		key = senderDict['key']
+		mode = senderDict['mode']
+		nodePorts = senderDict['nodes']
+		initStartTime = senderDict['startTime']
+		addr = mysocket.gethostname()
+		nodes = [(addr, portNum) for portNum in nodePorts]
 
-	startTime = time()
-	s = sender(ports, key)
-	shares = s.sendShares(msg, n, k, prime, nodes, mode)
-	endTime = time()
+		startTime = time()
+		s = sender(ports, key)
+		shares = s.sendShares(msg, n, k, prime, nodes, mode)
+		endTime = time()
 
-	print "Time elapsed since initialization:", endTime - initStartTime
-	print "Time taken to send shares:", endTime - startTime
-	print "-" * 50
+		print "Time elapsed since initialization:", endTime - initStartTime
+		print "Time taken to send shares:", endTime - startTime
+		print "-" * 50
+	except:
+		print "An error has occured. Please try again later."
 	
 ##################### End of Code ###########################
