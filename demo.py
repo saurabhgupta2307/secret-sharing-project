@@ -245,7 +245,7 @@ if __name__ == "__main__":		#code to execute if called from command-line
 
 	secretNum = message.strToNum(secret)
 	prime = getLargePrime(secretNum)
-	key = generatekey(512)
+	key = generatekey(256)
 	buf = 1024
 
 	minPort = random.randint(10000, 30000)
