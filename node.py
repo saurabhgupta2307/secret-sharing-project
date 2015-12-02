@@ -20,6 +20,7 @@ Class node
 		port - the port number
 		sock - a socket object
 		share - the share received from the sender
+		debug - a boolean debug mode indicator
     Constructor: 
         __init__(self, port)
     Methods:
@@ -61,11 +62,11 @@ Execute the following format command in a linux/unix shell.
 """
 
 #################### Import modules #########################
+import sys
 import argparse
-from time import time, sleep
-from random import random
+from time import time
 from modules.mysocket import mysocket
-from modules.util import genRandNum, message
+from modules.util import genRandNum, message, secureFail
 from modules.secretSharing import NO_VERIFICATION
 from modules.secretSharing import MAC_VERIFICATION
 from modules.secretSharing import AUX_INFO_VERIFICATION
@@ -88,27 +89,37 @@ class node:
 		port: An integer value for the port number.
 		sock: A socket object.
 		share: A string value for the share received from the sender.
+		debug: A boolean value indicating debug mode. 
 	"""
 
-	def __init__(self, port):
+	def __init__(self, port, debug=False):
 		"""Initializes the node object with a socket object using the port 
 		number specified by the argument port.
 
 		Args:
-			port: An nteger port number for the node.
+			port: An integer port number for the node.
+			debug: A boolean value indicating debug mode. 
 
 		Raises:
 			TypeError: Error when port is not an integer.
 		"""
 
-		if type(port) not in [int, long]:
-			raise TypeError("invalid port: int or long expected")
+		try:
+			if type(port) not in [int, long]:
+				raise TypeError("invalid port: int or long expected")
 
-		self.host, self.port = mysocket.gethostname(), port
-		self.sock = mysocket()
-		self.sock.bind((self.host, self.port))
-		self.share = None
-		print "Node (%s, %d) initiated" % (self.host, self.port)
+			self.host, self.port = mysocket.gethostname(), port
+			self.sock = mysocket()
+			self.sock.bind((self.host, self.port))
+			self.share = None
+			self.debug = debug
+			print "Node (%s, %d) initiated" % (self.host, self.port)
+		except:
+			if debug == True:
+				raise
+			else:
+				secureFail()
+				sys.exit()
 
 	def getNode(self):
 		"""Returns the host name and port number bound to the node object
@@ -254,55 +265,62 @@ class node:
 			ValueError: Error when the mode is invalid.
 		"""
 
-		if type(senderPorts) != list:
-			raise TypeError("invalid senderPorts: list expected")
-		elif type(receiverPorts) != list:
-			raise TypeError("invalid receiverPorts: list expected")
-		elif type(buf) not in [int, long]:
-			raise TypeError("invalid buf: int or long expected")
-		elif type(mode) not in [int, long]:
-			raise TypeError("invalid mode: int or long expected")
-		elif type(honest) != bool:
-			raise TypeError("invalid honest: bool expected")
-		elif mode not in [NO_VERIFICATION, MAC_VERIFICATION, AUX_INFO_VERIFICATION]:
-			modeRange = "%d, %d or %d" % (NO_VERIFICATION, MAC_VERIFICATION, AUX_INFO_VERIFICATION)
-			raise ValueError("invalid mode: " + modeRange + " expected")
+		try:
+			if type(senderPorts) != list:
+				raise TypeError("invalid senderPorts: list expected")
+			elif type(receiverPorts) != list:
+				raise TypeError("invalid receiverPorts: list expected")
+			elif type(buf) not in [int, long]:
+				raise TypeError("invalid buf: int or long expected")
+			elif type(mode) not in [int, long]:
+				raise TypeError("invalid mode: int or long expected")
+			elif type(honest) != bool:
+				raise TypeError("invalid honest: bool expected")
+			elif mode not in [NO_VERIFICATION, MAC_VERIFICATION, AUX_INFO_VERIFICATION]:
+				modeRange = "%d, %d or %d" % (NO_VERIFICATION, MAC_VERIFICATION, AUX_INFO_VERIFICATION)
+				raise ValueError("invalid mode: " + modeRange + " expected")
 
-		self.sock.listen(5)
-		clients = [None, None]
-		tasksDone = [False, False]
+			self.sock.listen(5)
+			clients = [None, None]
+			tasksDone = [False, False]
 
-		while tasksDone.count(True) != 2:
-			if clients.count(None) > 0:
-				c, addr = self.sock.accept()
-				port = addr[1]
-				if port in senderPorts:
-					clients[0] = c
-					print "Sender (Port=%d) connected" % port
-				elif port in receiverPorts:
-					clients[1] = c
-					print "Receiver (Port=%d) connected" % port
-				else:
-					print "Unknown node %s connected. Dropping connection!" % addr
-					c.close()
-				
-			if clients[0] != None and tasksDone[0] != True:
-				self.receiveShare(clients[0], buf)
-				clients[0].close()
-				print "Share received:", self.share, "\n"
-				if honest == False:
-					self.manipulateShare(mode)
-					print "Share manipulated:", self.share, "\n"
-				tasksDone[0] = True
-				print "-" * 50
+			while tasksDone.count(True) != 2:
+				if clients.count(None) > 0:
+					c, addr = self.sock.accept()
+					port = addr[1]
+					if port in senderPorts:
+						clients[0] = c
+						print "Sender (Port=%d) connected" % port
+					elif port in receiverPorts:
+						clients[1] = c
+						print "Receiver (Port=%d) connected" % port
+					else:
+						print "Unknown node %s connected. Dropping connection!" % addr
+						c.close()
+					
+				if clients[0] != None and tasksDone[0] != True:
+					self.receiveShare(clients[0], buf)
+					clients[0].close()
+					print "Share received:", self.share, "\n"
+					if honest == False:
+						self.manipulateShare(mode)
+						print "Share manipulated:", self.share, "\n"
+					tasksDone[0] = True
+					print "-" * 50
 
-			if clients[1] != None and tasksDone[0] == True and self.isShareReceived():
-				self.sendShare(clients[1])
-				clients[1].close()
-				print "Sent:", self.share, "\n"
-				tasksDone[1] = True
+				if clients[1] != None and tasksDone[0] == True and self.isShareReceived():
+					self.sendShare(clients[1])
+					clients[1].close()
+					print "Sent:", self.share, "\n"
+					tasksDone[1] = True
 
-		self.sock.close()
+			self.sock.close()
+		except:
+			if self.debug == True:
+				raise
+			else:
+				secureFail()
+				sys.exit()
 
 
 #############################################################
@@ -313,9 +331,11 @@ if __name__ == "__main__":		#code to execute if called from command-line
 	parser = argparse.ArgumentParser()
 	parser.add_argument("-p", "--port", type=int)
 	parser.add_argument("-f", dest="faulty", action='store_true')
+	parser.add_argument("-d", "--debug", dest="debug", action='store_true')
+	parser.set_defaults(debug=False)
 	parser.set_defaults(faulty=False)
+	
 	args = parser.parse_args()
-
 	if args.port == None:
 		parser.error("Missing -p <port>")
 
@@ -340,16 +360,19 @@ if __name__ == "__main__":		#code to execute if called from command-line
 			print "**** Faulty Node ****"
 
 		startTime = time()
-		currNode = node(port)
+		currNode = node(port, args.debug)
 		currNode.run(senderPorts, receiverPorts, buf, mode, honest)
 		endTime = time()
 
 		print "Time of operation:", endTime - startTime
 		print "-" * 50
 
+	except SystemExit:
+		pass
 	except:
-		randWait = random() * 5
-		sleep(randWait)
-		print "An error has occurred. Please try again later."
+		if args.debug == True:
+			raise
+		else:
+			secureFail()
 
 ##################### End of Code ###########################

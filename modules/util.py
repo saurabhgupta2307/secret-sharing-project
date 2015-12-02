@@ -14,6 +14,7 @@ Global Methods
     genRandNum(maximum)
     generatePrimes()
     getLargePrime(num)
+    secureFail()
 
 Class message
 ~~~~~~~~~~~~~~
@@ -33,6 +34,8 @@ import base64
 import ast
 import os
 import math
+from time import sleep
+from random import random
 
 #################### Module Metadata ########################
 __author__ = "Saurabh Gupta, Omkar Kaptan"
@@ -41,6 +44,14 @@ __license__ = "GPL"
 __version__ = "1.0"
 
 #################### Method Definitions #####################
+
+def secureFail():
+    """Prints a secure message after waiting a random amount
+    of time, upto 5 seconds, and terminates
+    """
+    randWait = random() * 5
+    sleep(randWait)
+    print "An error has occurred. Please try again later."
 
 def generatekey(length=256):
     """Generates a cryptographically secure random base64 key of 

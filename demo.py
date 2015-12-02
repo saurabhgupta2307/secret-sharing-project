@@ -80,6 +80,7 @@ senderPy = "sender.py"
 receiverPy = "receiver.py"
 portOption = " -p "
 faultyOption = " -f"
+debugOption = " -d"
 
 #################### Method Definitions #####################
 
@@ -151,7 +152,7 @@ def generateFile(data, fileName):
 	fp.write(str(data))
 	fp.close()
 
-def initNodes(n, t, nodePorts, verbose):
+def initNodes(n, t, nodePorts, verbose, debug):
 	"""Initializes n intermediate nodes, while selecting at most t of them 
 	as faulty, and invokes bash shell windows for each node by constructing 
 	command strings for them. When verbose is true, the windows stay active 
@@ -179,6 +180,9 @@ def initNodes(n, t, nodePorts, verbose):
 			faultyNodes.append(nodePort)
 		
 		commandString = cmdStr1 + cmdStr2 + nodePy2 
+		if debug == True:
+			commandString += debugOption
+
 		if verbose == True:
 			commandString += cmdStr3 
 		
@@ -190,7 +194,7 @@ def initNodes(n, t, nodePorts, verbose):
 
 	return faultyNodes
 
-def initClient(clientPy, verbose):
+def initClient(clientPy, debug):
 	"""Initializes a client node using the clientPy code and invokes a bash 
 	shell window by constructing a command string for it. Verbose option is 
 	passed to the clientPy for reference. 
@@ -203,6 +207,10 @@ def initClient(clientPy, verbose):
 	"""
 
 	commandString = cmdStr1 + cmdStr2 + clientPy 
+	
+	if debug == True:
+		commandString += debugOption
+
 	commandString += cmdStr3 + cmdStr4
 	senderFile = os.popen(commandString)
 
@@ -217,7 +225,9 @@ if __name__ == "__main__":		#code to execute if called from command-line
 	parser.add_argument("-k", "--klimit", type=int)
 	parser.add_argument("-t", "--tolerance", type=int)
 	parser.add_argument("-v", "--verbose", dest="verbose", action='store_true')
+	parser.add_argument("-d", "--debug", dest="debug", action='store_true')
 	parser.set_defaults(verbose=False)
+	parser.set_defaults(debug=False)
 
 	args = parser.parse_args()
 
@@ -245,7 +255,7 @@ if __name__ == "__main__":		#code to execute if called from command-line
 	key = generatekey(256)
 	buf = 1024
 
-	minPort = random.randint(10000, 30000)
+	minPort = random.randint(10000, 40000)
 	senderPorts = range(minPort, minPort + n)
 	receiverPorts = range(minPort + n, minPort + 2*n)
 	nodePorts = range(minPort + 2*n, minPort + 3*n)
@@ -265,9 +275,9 @@ if __name__ == "__main__":		#code to execute if called from command-line
 	generateFile(recvrDict, "receiver.txt")
 	generateFile(nodeDict, "nodes.txt")
 
-	faultyNodes = initNodes(n, t, nodePorts, args.verbose)
-	initClient(senderPy, args.verbose)
-	initClient(receiverPy, args.verbose)
+	faultyNodes = initNodes(n, t, nodePorts, args.verbose, args.debug)
+	initClient(senderPy, args.debug)
+	initClient(receiverPy, args.debug)
 
 	print "n = %d, k = %d, t = %d" % (n, k, t)
 	print "Faulty Nodes:", faultyNodes

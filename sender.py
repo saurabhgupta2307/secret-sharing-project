@@ -26,6 +26,7 @@ Class sender
         ports - list of port numbers
 		sock - list of socket objects
 		key - shared key for MAC mode verification
+		debug - a boolean debug mode indicator
     Constructor: 
         __init__(self, ports, key)
     Methods:		
@@ -59,10 +60,10 @@ The algorithm used is as follows:
 
 #################### Import modules #########################
 import sys
-from time import time, sleep
-from random import random
+import argparse
+from time import time
 from modules.mysocket import mysocket
-from modules.util import message 
+from modules.util import message, secureFail
 from modules.secretSharing import secretSharing
 from modules.secretSharing import NO_VERIFICATION
 from modules.secretSharing import MAC_VERIFICATION
@@ -85,9 +86,10 @@ class sender:
 		ports: A list of integer values for the port numbers.
 		sock: A list of socket objects.
 		key: A base64 format string key to be used for MAC tag generation.
+		debug: A boolean value indicating debug mode. 
 	"""
 
-	def __init__(self, ports, key=None):
+	def __init__(self, ports, key=None, debug=False):
 		"""Initializes the sender object with a list of sockets containing 
 		one socket for each port in the ports list.
 
@@ -95,24 +97,33 @@ class sender:
 			ports: A list of integer port number values for the sender.
 			key: A base64 format string key to be used for MAC tag generation.
 				Default value = None.
+			debug: A boolean value indicating debug mode. 
 
 		Raises:
 			TypeError: Error when key is not a string value, or when ports is not 
 			a list of integers.
 		"""
 
-		if type(ports) != list:
-			raise TypeError("invalid ports: list expected")
-		elif key != None and type(key) != str:
-			raise TypeError("invalid key: str expected")
+		try:
+			if type(ports) != list:
+				raise TypeError("invalid ports: list expected")
+			elif key != None and type(key) != str:
+				raise TypeError("invalid key: str expected")
 
-		self.host, self.ports = mysocket.gethostname(), ports
-		self.sock = []
-		self.key = key
-		for port in ports:
-			self.sock.append(mysocket())
-			self.sock[-1].bind((self.host, port))
-			print "Sender socket (%s, %d) initiated" % (self.host, port)
+			self.host, self.ports = mysocket.gethostname(), ports
+			self.sock = []
+			self.key = key
+			self.debug = debug
+			for port in ports:
+				self.sock.append(mysocket())
+				self.sock[-1].bind((self.host, port))
+				print "Sender socket (%s, %d) initiated" % (self.host, port)
+		except:
+			if debug == True:
+				raise
+			else:
+				secureFail()
+				sys.exit()
 
 	def getSharesNoVrfy(self, shares):
 		"""Generates a list of string format shares without any verification
@@ -283,51 +294,58 @@ class sender:
 				mode is invalid.
 		"""
 
-		if type(msg) != str:
-			raise TypeError("invalid msg: str expected")
-		elif len(msg) > 159:
-			raise ValueError("invalid msg: expected 159 characters or less")
-		elif type(n) not in [int, long]:
-			raise TypeError("invalid n: int or long expected")
-		elif type(k) not in [int, long]:
-			raise TypeError("invalid k: int or long expected")
-		elif type(prime) not in [int, long]:
-			raise TypeError("invalid prime: int or long expected")
-		elif type(nodes) != list:
-			raise TypeError("invalid nodes: list expected")
-		elif type(mode) != type(NO_VERIFICATION):
-			raise TypeError("invalid mode: int or long expected")
-		elif mode not in [NO_VERIFICATION, MAC_VERIFICATION, AUX_INFO_VERIFICATION]:
-			modeRange = "%d, %d or %d" % (NO_VERIFICATION, MAC_VERIFICATION, AUX_INFO_VERIFICATION)
-			raise ValueError("invalid mode: " + modeRange + " expected")
+		try:
+			if type(msg) != str:
+				raise TypeError("invalid msg: str expected")
+			elif len(msg) > 159:
+				raise ValueError("invalid msg: expected 159 characters or less")
+			elif type(n) not in [int, long]:
+				raise TypeError("invalid n: int or long expected")
+			elif type(k) not in [int, long]:
+				raise TypeError("invalid k: int or long expected")
+			elif type(prime) not in [int, long]:
+				raise TypeError("invalid prime: int or long expected")
+			elif type(nodes) != list:
+				raise TypeError("invalid nodes: list expected")
+			elif type(mode) != type(NO_VERIFICATION):
+				raise TypeError("invalid mode: int or long expected")
+			elif mode not in [NO_VERIFICATION, MAC_VERIFICATION, AUX_INFO_VERIFICATION]:
+				modeRange = "%d, %d or %d" % (NO_VERIFICATION, MAC_VERIFICATION, AUX_INFO_VERIFICATION)
+				raise ValueError("invalid mode: " + modeRange + " expected")
 
-		print "Secret message:", msg
-		genStartTime = time()
-		shares = secretSharing.generateShares(msg, n, k, prime)
-		sharesToSend = []
+			print "Secret message:", msg
+			genStartTime = time()
+			shares = secretSharing.generateShares(msg, n, k, prime)
+			sharesToSend = []
 
-		if mode == NO_VERIFICATION:
-			sharesToSend = self.getSharesNoVrfy(shares)
-		elif mode == MAC_VERIFICATION:
-			sharesToSend = self.getSharesWithMac(shares)
-		elif mode == AUX_INFO_VERIFICATION:
-			sharesToSend = self.getSharesWithAuxInfo(shares, prime)
+			if mode == NO_VERIFICATION:
+				sharesToSend = self.getSharesNoVrfy(shares)
+			elif mode == MAC_VERIFICATION:
+				sharesToSend = self.getSharesWithMac(shares)
+			elif mode == AUX_INFO_VERIFICATION:
+				sharesToSend = self.getSharesWithAuxInfo(shares, prime)
 
-		genEndTime = time()
-		for i in range(0, len(nodes)):
-			self.sendShareToNode(sharesToSend[i], nodes[i], i)
+			genEndTime = time()
+			for i in range(0, len(nodes)):
+				self.sendShareToNode(sharesToSend[i], nodes[i], i)
 
-		msgSize = sys.getsizeof(msg)
-		shareSize = sys.getsizeof(sharesToSend[0])
-		totalSharesSize = shareSize * n
+			msgSize = sys.getsizeof(msg)
+			shareSize = sys.getsizeof(sharesToSend[0])
+			totalSharesSize = shareSize * n
 
-		print "-" * 50
-		print "Secret Message:", msg
-		print "Message Size: %d bytes" % msgSize
-		print "Share Size: %d bytes" % shareSize
-		print "Total Shares Size: %d bytes" % totalSharesSize
-		print "-" * 50
-		return [sharesToSend, genEndTime-genStartTime]
+			print "-" * 50
+			print "Secret Message:", msg
+			print "Message Size: %d bytes" % msgSize
+			print "Share Size: %d bytes" % shareSize
+			print "Total Shares Size: %d bytes" % totalSharesSize
+			print "-" * 50
+			return [sharesToSend, genEndTime-genStartTime]
+		except:
+			if self.debug == True:
+				raise
+			else:
+				secureFail()
+				sys.exit()
 
 
 #############################################################
@@ -335,6 +353,12 @@ class sender:
 #############################################################
 
 if __name__ == "__main__":		#code to execute if called from command-line
+	parser = argparse.ArgumentParser()
+	parser.add_argument("-d", "--debug", dest="debug", action='store_true')
+	parser.set_defaults(debug=False)	
+
+	args = parser.parse_args()
+
 	try:
 		fp = open("sender.txt", "r")
 		dictStr = fp.read()
@@ -352,14 +376,18 @@ if __name__ == "__main__":		#code to execute if called from command-line
 		addr = mysocket.gethostname()
 		nodes = [(addr, portNum) for portNum in nodePorts]
 
-		s = sender(ports, key)
+		s = sender(ports, key, args.debug)
 		shares, genTime = s.sendShares(msg, n, k, prime, nodes, mode)
 
 		print "Time taken to generate shares:", genTime
 		print "-" * 50
+	
+	except SystemExit:
+		pass
 	except:
-		randWait = random() * 5
-		sleep(randWait)
-		print "An error has occurred. Please try again later."
+		if args.debug == True:
+			raise
+		else:
+			secureFail()
 	
 ##################### End of Code ###########################

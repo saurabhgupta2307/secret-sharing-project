@@ -30,6 +30,7 @@ Class receiver
         ports - list of port numbers
 		sock - list of socket objects
 		key - shared key for MAC mode verification
+		debug - a boolean debug mode indicator
     Constructor: 
         __init__(self, ports, key)
     Methods:		
@@ -70,10 +71,12 @@ The algorithm used is as follows:
 """
 
 #################### Import modules #########################
+import argparse
+import sys
 from time import time, sleep
 from random import random
 from modules.mysocket import mysocket
-from modules.util import message 
+from modules.util import message, secureFail
 from modules.secretSharing import secretSharing
 from modules.secretSharing import NO_VERIFICATION
 from modules.secretSharing import MAC_VERIFICATION
@@ -98,9 +101,10 @@ class receiver:
 		sock: A list of socket objects.
 		key: A base64 format string key to be used for MAC tag 
 			verification.
+		debug: A boolean value indicating debug mode. 
 	"""
 
-	def __init__(self, ports, key=None):
+	def __init__(self, ports, key=None, debug=False):
 		"""Initializes the receiver object with a list of sockets containing 
 		one socket for each port in the ports list.
 
@@ -108,24 +112,33 @@ class receiver:
 			ports: A list of integer port number values for the receiver.
 			key: A base64 format string key to be used for MAC tag generation.
 				Default value = None.
+			debug: A boolean value indicating debug mode. 
 
 		Raises:
 			TypeError: Error when key is not a string value, or when ports is not 
 			a list of integers.
 		"""
 
-		if type(ports) != list:
-			raise TypeError("invalid ports: list expected")
-		elif key != None and type(key) != str:
-			raise TypeError("invalid key: str expected")
+		try:
+			if type(ports) != list:
+				raise TypeError("invalid ports: list expected")
+			elif key != None and type(key) != str:
+				raise TypeError("invalid key: str expected")
 
-		self.host, self.ports = mysocket.gethostname(), ports
-		self.sock = []
-		self.key = key
-		for port in ports:
-			self.sock.append(mysocket())
-			self.sock[-1].bind((self.host, port))
-			print "Receiver socket (%s, %d) initiated" % (self.host, port)
+			self.host, self.ports = mysocket.gethostname(), ports
+			self.sock = []
+			self.key = key
+			self.debug = debug
+			for port in ports:
+				self.sock.append(mysocket())
+				self.sock[-1].bind((self.host, port))
+				print "Receiver socket (%s, %d) initiated" % (self.host, port)
+		except:
+			if debug == True:
+				raise
+			else:
+				secureFail()
+				sys.exit()
 
 	def getShareFromNode(self, node, buffer, index):
 		"""Connects to the given node and receives the corresponding share
@@ -550,49 +563,56 @@ class receiver:
 			ValueError: Error when the mode is invalid.
 		"""
 
-		if type(nodes) != list:
-			raise TypeError("invalid nodes: list expected")
-		elif type(buffer) not in [int, long]:
-			raise TypeError("invalid buffer: int or long expected")
-		elif type(k) not in [int, long]:
-			raise TypeError("invalid k: int or long expected")
-		elif type(t) not in [int, long]:
-			raise TypeError("invalid t: int or long expected")
-		elif type(prime) not in [int, long]:
-			raise TypeError("invalid prime: int or long expected")
-		elif type(mode) not in [int, long]:
-			raise TypeError("invalid mode: int or long expected")
-		elif mode not in [NO_VERIFICATION, MAC_VERIFICATION, AUX_INFO_VERIFICATION]:
-			modeRange = "%d, %d or %d" % (NO_VERIFICATION, MAC_VERIFICATION, AUX_INFO_VERIFICATION)
-			raise ValueError("invalid mode: " + modeRange + " expected")
-
-		shares = self.getShares(nodes, buffer)
-		reconStartTime = time()
-		sharesForRecon = []
-		honestNodes = []
-
-		if mode == NO_VERIFICATION:
-			sharesForRecon = self.getReconSharesNoVrfy(shares, k)
-		elif mode == MAC_VERIFICATION:
-			sList, macList = self.unpackSharesMacMode(shares)
-			honestNodes = self.verifyMac(sList, macList)
-			sharesForRecon = self.getReconSharesMacMode(sList, honestNodes, k)
-		elif mode == AUX_INFO_VERIFICATION:
-			sList, yList, bList, cList = self.unpackSharesAuxMode(shares)
-			honestNodes = self.verifyAuxInfo(sList, yList, bList, cList, t, prime)
-			sharesForRecon = self.getReconSharesAuxMode(sList, honestNodes, k)
-
-		print "-" * 50
-		print "Reconstructing Secret from Shares", sharesForRecon
-		secretNum = secretSharing.reconstructSecret(sharesForRecon, k, prime)
 		try:
-			secret = message.numToStr(secretNum)
-		except TypeError:
-			secret = None
-		faultyNodes = self.getFaultyNodes(nodes, honestNodes)
-		reconEndTime = time()
+			if type(nodes) != list:
+				raise TypeError("invalid nodes: list expected")
+			elif type(buffer) not in [int, long]:
+				raise TypeError("invalid buffer: int or long expected")
+			elif type(k) not in [int, long]:
+				raise TypeError("invalid k: int or long expected")
+			elif type(t) not in [int, long]:
+				raise TypeError("invalid t: int or long expected")
+			elif type(prime) not in [int, long]:
+				raise TypeError("invalid prime: int or long expected")
+			elif type(mode) not in [int, long]:
+				raise TypeError("invalid mode: int or long expected")
+			elif mode not in [NO_VERIFICATION, MAC_VERIFICATION, AUX_INFO_VERIFICATION]:
+				modeRange = "%d, %d or %d" % (NO_VERIFICATION, MAC_VERIFICATION, AUX_INFO_VERIFICATION)
+				raise ValueError("invalid mode: " + modeRange + " expected")
 
-		return [secret, faultyNodes, reconEndTime-reconStartTime]
+			shares = self.getShares(nodes, buffer)
+			reconStartTime = time()
+			sharesForRecon = []
+			honestNodes = []
+
+			if mode == NO_VERIFICATION:
+				sharesForRecon = self.getReconSharesNoVrfy(shares, k)
+			elif mode == MAC_VERIFICATION:
+				sList, macList = self.unpackSharesMacMode(shares)
+				honestNodes = self.verifyMac(sList, macList)
+				sharesForRecon = self.getReconSharesMacMode(sList, honestNodes, k)
+			elif mode == AUX_INFO_VERIFICATION:
+				sList, yList, bList, cList = self.unpackSharesAuxMode(shares)
+				honestNodes = self.verifyAuxInfo(sList, yList, bList, cList, t, prime)
+				sharesForRecon = self.getReconSharesAuxMode(sList, honestNodes, k)
+
+			print "-" * 50
+			print "Reconstructing Secret from Shares", sharesForRecon
+			secretNum = secretSharing.reconstructSecret(sharesForRecon, k, prime)
+			try:
+				secret = message.numToStr(secretNum)
+			except TypeError:
+				secret = None
+			faultyNodes = self.getFaultyNodes(nodes, honestNodes)
+			reconEndTime = time()
+
+			return [secret, faultyNodes, reconEndTime-reconStartTime]
+		except:
+			if self.debug == True:
+				raise
+			else:
+				secureFail()
+				sys.exit()
 
 
 #############################################################
@@ -600,6 +620,12 @@ class receiver:
 #############################################################
 
 if __name__ == "__main__":		#code to execute if called from command-line
+	parser = argparse.ArgumentParser()
+	parser.add_argument("-d", "--debug", dest="debug", action='store_true')
+	parser.set_defaults(debug=False)	
+
+	args = parser.parse_args()	
+
 	try:
 		fp = open("receiver.txt", "r")
 		dictStr = fp.read()
@@ -617,7 +643,7 @@ if __name__ == "__main__":		#code to execute if called from command-line
 		addr = mysocket.gethostname()
 		nodes = [(addr, portNum) for portNum in nodePorts]
 
-		r = receiver(ports, key)
+		r = receiver(ports, key, args.debug)
 		secret, faultyNodes, reconTime = r.reconstructSecret(nodes, buf, k, t, prime, mode)
 		if len(faultyNodes) == 0:
 			faultyNodes = None
@@ -629,9 +655,13 @@ if __name__ == "__main__":		#code to execute if called from command-line
 		print "-" * 50
 		print "Time taken to reconstruct secret :", reconTime
 		print "-" * 50
+	
+	except SystemExit:
+		pass
 	except:
-		randWait = random() * 5
-		sleep(randWait)
-		print "An error has occurred. Please try again later."
+		if args.debug == True:
+			raise
+		else:
+			secureFail()
 
 ##################### End of Code ###########################
