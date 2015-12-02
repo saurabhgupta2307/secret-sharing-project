@@ -68,6 +68,14 @@ The algorithm used is as follows:
 	5. Reconstruct the secret message using valid shares, and return 
 		the secret and the list of faulty nodes using the list of 
 		invalid shares. 
+
+Usage:
+~~~~~~
+Execute the following format command in a linux/unix shell.
+./receiver.py [-d]
+	-d is for debug mode. If used, the error and exception
+		messages are displayed as debug information. 
+		Otherwise, a secure fail is executed.
 """
 
 #################### Import modules #########################

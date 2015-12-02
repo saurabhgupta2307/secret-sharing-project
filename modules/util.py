@@ -47,7 +47,7 @@ __version__ = "1.0"
 
 def secureFail():
     """Prints a secure message after waiting a random amount
-    of time, upto 5 seconds, and terminates
+    of time, upto 5 seconds, and terminates.
     """
     randWait = random() * 5
     sleep(randWait)

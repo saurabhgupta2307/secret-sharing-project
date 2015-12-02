@@ -56,6 +56,14 @@ The algorithm used is as follows:
 	4. Send one share each to the intermediate nodes. Each share 
 		contains the share of the message along with the verification 
 		information pertaining to the share.
+
+Usage:
+~~~~~~
+Execute the following format command in a linux/unix shell.
+./sender.py [-d]
+	-d is for debug mode. If used, the error and exception
+		messages are displayed as debug information. 
+		Otherwise, a secure fail is executed.
 """
 
 #################### Import modules #########################

@@ -53,12 +53,15 @@ The algorithm used is as follows:
 Usage:
 ~~~~~~
 Execute the following format command in a linux/unix shell.
-./node.py -p <port> [-f]
+./node.py -p <port> [-f] [-d]
 	-p <port> is an integer value representing the port number 
 		of intermediate node socket.
 	-f is a boolean switch representing whether or not the  
 		node is faulty. If used, the node is executed as a 
 		faulty node.
+	-d is for debug mode. If used, the error and exception
+		messages are displayed as debug information. 
+		Otherwise, a secure fail is executed.
 """
 
 #################### Import modules #########################

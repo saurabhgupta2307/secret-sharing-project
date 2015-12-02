@@ -42,7 +42,7 @@ Global Methods:
 Usage:
 ~~~~~~
 Execute the following format command in a linux/unix shell.
-./demo.py -n <nodes> -k <shares> [-t <faulty>] [-v]
+./demo.py -n <nodes> -k <shares> [-t <faulty>] [-v] [-d]
 	-n <nodes> is an integer value representing the number 
 		of intermediate nodes and number of shares to be 
 		generated.
@@ -55,6 +55,9 @@ Execute the following format command in a linux/unix shell.
 	-v is for verbose mode. If used, the intermediate node 
 		shell windows remain open after the execution is 
 		complete. Otherwise, they terminate.
+	-d is for debug mode. If used, the error and exception
+		messages are displayed as debug information. 
+		Otherwise, a secure fail is executed.
 """
 
 #################### Import modules #########################
