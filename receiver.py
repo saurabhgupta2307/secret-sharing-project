@@ -70,7 +70,8 @@ The algorithm used is as follows:
 """
 
 #################### Import modules #########################
-from time import time
+from time import time, sleep
+from random import random
 from modules.mysocket import mysocket
 from modules.util import message 
 from modules.secretSharing import secretSharing
@@ -629,6 +630,8 @@ if __name__ == "__main__":		#code to execute if called from command-line
 		print "Time taken to reconstruct secret :", reconTime
 		print "-" * 50
 	except:
-		print "An error has occured. Please try again later."
+		randWait = random() * 5
+		sleep(randWait)
+		print "An error has occurred. Please try again later."
 
 ##################### End of Code ###########################

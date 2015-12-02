@@ -62,7 +62,8 @@ Execute the following format command in a linux/unix shell.
 
 #################### Import modules #########################
 import argparse
-from time import time
+from time import time, sleep
+from random import random
 from modules.mysocket import mysocket
 from modules.util import genRandNum, message
 from modules.secretSharing import NO_VERIFICATION
@@ -328,7 +329,6 @@ if __name__ == "__main__":		#code to execute if called from command-line
 		buf = nodeDict['buffer']
 		senderPorts = nodeDict['sender']
 		receiverPorts = nodeDict['receiver']
-		initStartTime = nodeDict['startTime']
 		port = args.port
 
 		if args.faulty != None:
@@ -344,10 +344,12 @@ if __name__ == "__main__":		#code to execute if called from command-line
 		currNode.run(senderPorts, receiverPorts, buf, mode, honest)
 		endTime = time()
 
-		print "Time elapsed since initialization:", endTime - initStartTime
 		print "Time of operation:", endTime - startTime
 		print "-" * 50
+
 	except:
-		print "An error has occured. Please try again later."
+		randWait = random() * 5
+		sleep(randWait)
+		print "An error has occurred. Please try again later."
 
 ##################### End of Code ###########################
